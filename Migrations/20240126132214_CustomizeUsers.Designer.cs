@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie_rental.Data;
 
@@ -11,9 +12,11 @@ using Movie_rental.Data;
 namespace Movie_rental.Migrations
 {
     [DbContext(typeof(MovieRentalDbContext))]
-    partial class MovieRentalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240126132214_CustomizeUsers")]
+    partial class CustomizeUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -193,7 +196,7 @@ namespace Movie_rental.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Actors", (string)null);
+                    b.ToTable("Actors");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.Category", b =>
@@ -210,7 +213,7 @@ namespace Movie_rental.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.Film", b =>
@@ -253,7 +256,7 @@ namespace Movie_rental.Migrations
 
                     b.HasIndex("LanguageId");
 
-                    b.ToTable("Films", (string)null);
+                    b.ToTable("Films");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.FilmActor", b =>
@@ -276,7 +279,7 @@ namespace Movie_rental.Migrations
 
                     b.HasIndex("FilmId");
 
-                    b.ToTable("FilmActors", (string)null);
+                    b.ToTable("FilmActors");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.FilmCategory", b =>
@@ -299,7 +302,7 @@ namespace Movie_rental.Migrations
 
                     b.HasIndex("FilmId");
 
-                    b.ToTable("FilmCategories", (string)null);
+                    b.ToTable("FilmCategories");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.Inventory", b =>
@@ -322,7 +325,7 @@ namespace Movie_rental.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("Inventories", (string)null);
+                    b.ToTable("Inventories");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.Language", b =>
@@ -339,7 +342,7 @@ namespace Movie_rental.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Languages", (string)null);
+                    b.ToTable("Languages");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.Payment", b =>
@@ -366,7 +369,7 @@ namespace Movie_rental.Migrations
 
                     b.HasIndex("RentalId");
 
-                    b.ToTable("Payments", (string)null);
+                    b.ToTable("Payments");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.Rental", b =>
@@ -395,7 +398,7 @@ namespace Movie_rental.Migrations
 
                     b.HasIndex("InventoryId");
 
-                    b.ToTable("Rentals", (string)null);
+                    b.ToTable("Rentals");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.Reservation", b =>
@@ -418,7 +421,7 @@ namespace Movie_rental.Migrations
 
                     b.HasIndex("InventoryId");
 
-                    b.ToTable("Reservations", (string)null);
+                    b.ToTable("Reservations");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.Store", b =>
@@ -441,7 +444,7 @@ namespace Movie_rental.Migrations
 
                     b.HasIndex("ManagerId");
 
-                    b.ToTable("Stores", (string)null);
+                    b.ToTable("Stores");
                 });
 
             modelBuilder.Entity("Movie_rental.Entities.User", b =>

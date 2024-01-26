@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Movie_rental.Entities
 {
@@ -10,7 +11,7 @@ namespace Movie_rental.Entities
         public int LanguageId { get; set; }
         public Language Language { get; set; }
         public int RentalDuration { get; set; }
-        [Column(TypeName = "decimal(5,2)")]
+        [Precision(8, 2)]
         public decimal RentalRate { get; set; }
         public int Length { get; set; }
         public string Rating { get; set; }

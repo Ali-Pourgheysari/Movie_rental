@@ -42,6 +42,22 @@ namespace Movie_rental.Data
                 new IdentityRole { Name = "Manager", NormalizedName = "MANAGER", Id = "12ef1baa-3601-4c1f-8873-3259bmanager" },
                 new IdentityRole { Name = "Customer", NormalizedName = "CUSTOMER", Id = "3ba53cbd-20ad-4684-8709-c662customer" }
             );
+
+            // Add unique constraints
+            AddConstraint(builder);
+
+            // Configure TPC for User, Manager, and Customer
+            builder.Entity<User>().ToTable("User");
+            builder.Entity<Manager>().ToTable("Manager").HasBaseType<User>();
+            builder.Entity<Customer>().ToTable("Customer").HasBaseType<User>();
+
+        }
+
+        private void AddConstraint(ModelBuilder builder)
+        {
+            builder.Entity<Customer>()
+                .Property(p => p.DelayCount)
+                .HasDefaultValue(0);
         }
 
         public static void RenameAspTables(ModelBuilder builder)

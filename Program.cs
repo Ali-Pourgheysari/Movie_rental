@@ -14,7 +14,7 @@ builder.Services.AddDbContext<MovieRentalDbContext>(
     }
     );
 
-builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<MovieRentalDbContext>();
 

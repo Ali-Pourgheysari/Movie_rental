@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Movie_rental.Entities
 {
@@ -8,7 +9,7 @@ namespace Movie_rental.Entities
         public Customer? Customer { get; set; }
         public int RentalId { get; set; }
         public Rental Rental { get; set; }
-        [Column(TypeName = "decimal(5,2)")]
+        [Precision(8, 2)]
         public decimal Amount { get; set; }
     }
 }

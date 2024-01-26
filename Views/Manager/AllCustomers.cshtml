@@ -1,0 +1,26 @@
+﻿@using Movie_rental.Entities;
+@model List<CustomerInfo>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name</th>
+            <th scope="col">User name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Delay count(each time)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for(var i = 0; i< Model.Count; i++)
+        {
+            <tr>
+                <th scope="row">@i - 1</th>
+                <td>@Model[i].Name</td>
+                <td>@Model[i].UserName</td>
+                <td>@Model[i].Email</td>
+                <td>@Model[i].DelayCount</td>
+            </tr>
+        }
+    </tbody>
+</table>
