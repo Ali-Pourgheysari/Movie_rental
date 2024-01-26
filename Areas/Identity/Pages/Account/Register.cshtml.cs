@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Movie_rental.Data;
 using Movie_rental.Entities;
 
 namespace Movie_rental.Areas.Identity.Pages.Account
