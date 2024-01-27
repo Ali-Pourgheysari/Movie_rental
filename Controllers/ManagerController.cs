@@ -36,29 +36,8 @@ namespace Movie_rental.Controllers
                            JOIN Inventories ON Rentals.InventoryId = Inventories.Id 
                            JOIN Stores ON Inventories.StoreId = Stores.Id 
                            WHERE Stores.ManagerId = '{_managerId}'";
-            List<CustomerInfo> customers = new List<CustomerInfo>();
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                using (var result = command.ExecuteReader())
-                {
-                    while (result.Read())
-                    {
-                        var customer = new CustomerInfo();
-                        foreach (var property in customer.GetType().GetProperties())
-                        {
-                            var value = result[property.Name];
-                            if (value != DBNull.Value)
-                            {
-                                property.SetValue(customer, value);
-                            }
-                        }
-                        customers.Add(customer);
-                    }
-                }
-            }
-            return View(customers);
+            
+            return View(GetExecuteQuery<CustomerInfo>(query));
         }
 
         public async Task<IActionResult> RentalDetails()
@@ -83,29 +62,8 @@ namespace Movie_rental.Controllers
                             s.ManagerId = '{_managerId}'
                         GROUP BY
                             f.Id, f.Title, S.Id;";
-            List<RentalDetails> rentalDetails = new List<RentalDetails>();
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                using (var result = command.ExecuteReader())
-                {
-                    while (result.Read())
-                    {
-                        var rentalDetail = new RentalDetails();
-                        foreach (var property in rentalDetail.GetType().GetProperties())
-                        {
-                            var value = result[property.Name];
-                            if (value != DBNull.Value)
-                            {
-                                property.SetValue(rentalDetail, value);
-                            }
-                        }
-                        rentalDetails.Add(rentalDetail);
-                    }
-                }
-                return View(rentalDetails);
-            }
+            
+            return View(GetExecuteQuery<RentalDetails>(query));
         }
 
         public async Task<IActionResult> AllRentals()
@@ -123,36 +81,7 @@ namespace Movie_rental.Controllers
                         WHERE
                             s.ManagerId = '{_managerId}'";
 
-            List<Rental> AllRentals = new List<Rental>();
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                using (var result = command.ExecuteReader())
-                {
-                    while (result.Read())
-                    {
-                        var activeRental = new Rental();
-                        foreach (var property in activeRental.GetType().GetProperties())
-                        {
-                            try
-                            {
-                                var value = result[property.Name];
-                                if (value != DBNull.Value)
-                                {
-                                    property.SetValue(activeRental, value);
-                                }
-                            }
-                            catch
-                            {
-                                continue;
-                            }
-                        }
-                        AllRentals.Add(activeRental);
-                    }
-                }
-            }
-            return View(AllRentals);
+            return View(GetExecuteQuery<Rental>(query));
         }
 
         [HttpPost]
@@ -160,12 +89,7 @@ namespace Movie_rental.Controllers
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"UPDATE Rentals SET RentalDate = '{RentalDate}', ReturnDate = '{ReturnDate}' WHERE Id = {Id}";
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                command.ExecuteNonQuery();
-            }
+            PostExecuteQuery(query);
             return RedirectToAction("AllRentals");
         }
 
@@ -187,29 +111,7 @@ namespace Movie_rental.Controllers
                         WHERE
                             s.ManagerId = '{_managerId}'";
 
-            List<CheckReservation> reservations = new List<CheckReservation>();
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                using (var result = command.ExecuteReader())
-                {
-                    while (result.Read())
-                    {
-                        var reservation = new CheckReservation();
-                        foreach (var property in reservation.GetType().GetProperties())
-                        {
-                            var value = result[property.Name];
-                            if (value != DBNull.Value)
-                            {
-                                property.SetValue(reservation, value);
-                            }
-                        }
-                        reservations.Add(reservation);
-                    }
-                }
-            }
-            return View(reservations);
+            return View(GetExecuteQuery<CheckReservation>(query));
         }
 
         [HttpPost]
@@ -218,14 +120,8 @@ namespace Movie_rental.Controllers
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var deleteFromReservationquery = $@"DELETE FROM Reservations WHERE Id = {reservationId}";
             var addToRentalQuery = $@"INSERT INTO Rentals (RentalDate, InventoryId, CustomerId) VALUES (GETDATE(), {inventoryId}, '{customerId}')";
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = deleteFromReservationquery;
-                _dbContext.Database.OpenConnection();
-                command.ExecuteNonQuery();
-                command.CommandText = addToRentalQuery;
-                command.ExecuteNonQuery();
-            }
+            PostExecuteQuery(deleteFromReservationquery);
+            PostExecuteQuery(addToRentalQuery);
             return RedirectToAction("CheckReservation");
         }
 
@@ -233,36 +129,7 @@ namespace Movie_rental.Controllers
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"SELECT * FROM Stores WHERE ManagerId = '{_managerId}'";
-            List<Store> stores = new List<Store>();
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                using (var result = command.ExecuteReader())
-                {
-                    while (result.Read())
-                    {
-                        var store = new Store();
-                        foreach (var property in store.GetType().GetProperties())
-                        {
-                            try
-                            {
-                                var value = result[property.Name];
-                                if (value != DBNull.Value)
-                                {
-                                    property.SetValue(store, value);
-                                }
-                            }
-                            catch
-                            {
-                                continue;
-                            }
-                        }
-                        stores.Add(store);
-                    }
-                }
-            }
-            return View(stores);
+            return View(GetExecuteQuery<Store>(query));
         }
 
         [HttpPost]
@@ -270,12 +137,7 @@ namespace Movie_rental.Controllers
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"UPDATE Stores SET Address = '{address}' WHERE Id = {id}";
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                command.ExecuteNonQuery();
-            }
+            PostExecuteQuery(query);
             return RedirectToAction("StoresDetails");
         }
 
@@ -302,8 +164,8 @@ namespace Movie_rental.Controllers
                         GROUP BY
                             f.Id, f.Title, c.Name, c.Id
                         ORDER BY AvgScore desc;";
-            
-            return View(FilmsConnection(query));
+
+            return View("Films", GetExecuteQuery<FilmScoreCategory>(query));
         }
 
         public async Task<IActionResult> ChosenCategory(int id)
@@ -332,13 +194,13 @@ namespace Movie_rental.Controllers
                             f.Id, f.Title, c.Name, c.Id
                         ORDER BY AvgScore desc;";
 
-            return View("Films", FilmsConnection(query));
+            return View("Films", GetExecuteQuery<FilmScoreCategory>(query));
 
         }
 
-        public List<FilmScoreCategory> FilmsConnection(string query)
+        public List<T> GetExecuteQuery<T>(string query) where T : new()
         {
-            List<FilmScoreCategory> filmScoreCategories = new List<FilmScoreCategory>();
+            List<T> entities = new List<T>();
             using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
             {
                 command.CommandText = query;
@@ -347,20 +209,39 @@ namespace Movie_rental.Controllers
                 {
                     while (result.Read())
                     {
-                        var filmScoreCategory = new FilmScoreCategory();
-                        foreach (var property in filmScoreCategory.GetType().GetProperties())
+                        var entity = new T();
+                        foreach (var property in entity.GetType().GetProperties())
                         {
-                            var value = result[property.Name];
-                            if (value != DBNull.Value)
+                            try
                             {
-                                property.SetValue(filmScoreCategory, value);
+                                var value = result[property.Name];
+                                if (value != DBNull.Value)
+                                {
+                                    property.SetValue(entity, value);
+                                }
                             }
+                            catch
+                            {
+                                continue;
+                            }
+
                         }
-                        filmScoreCategories.Add(filmScoreCategory);
+                        entities.Add(entity);
                     }
                 }
             }
-            return filmScoreCategories;
+            return entities;
         }
+
+        private void PostExecuteQuery(string query)
+        {
+            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = query;
+                _dbContext.Database.OpenConnection();
+                command.ExecuteNonQuery();
+            }
+        }
+
     }
 }

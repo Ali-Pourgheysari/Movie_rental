@@ -21,7 +21,7 @@
                     <td>
                         <a asp-controller="Manager" asp-action="ChosenCategory" asp-route-id="@Model[i].CategoryId">@Model[i].CategoryName</a>
                     </td>
-                    <td>@Model[i].AvgScore</td>
+                    <td>@Model[i].AvgScore.ToString("0.##")</td>
                 </tr>
             </form>
         }
