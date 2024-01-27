@@ -1,9 +1,11 @@
-﻿namespace Movie_rental.Entities
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Movie_rental.Entities
 {
     public class Rental : BaseEntity
     {
-        public DateTime RentalDate { get; set; }
-        public DateTime ReturnDate { get; set; }
+        public DateOnly RentalDate { get; set; }
+        public DateOnly ReturnDate { get; set; }
         public float Score { get; set; }
         public int InventoryId { get; set; }
         public Inventory Inventory { get; set; }

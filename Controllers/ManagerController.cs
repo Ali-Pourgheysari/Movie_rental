@@ -60,36 +60,6 @@ namespace Movie_rental.Controllers
         public async Task<IActionResult> RentalDetails()
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
-            //var title_NRentals = $@"SELECT f.Id AS FilmId, f.Title, COUNT(Rentals.Id) AS NumberOfRentals
-            //                        FROM Inventories i
-            //                        LEFT JOIN Rentals on i.Id = Rentals.InventoryId
-            //                        JOIN Films f ON i.FilmId = f.Id
-            //                        JOIN Stores s ON i.StoreId = s.id
-            //                        WHERE s.ManagerId = '{_managerId}'
-            //                        GROUP BY f.Id, f.title;";
-
-            //var nCopies = $@"SELECT f.Id AS FilmId, COUNT(i.Id) AS FilmCopies
-            //                    FROM Inventories i
-            //                    JOIN Films f ON i.FilmId = f.Id
-            //                    JOIN Stores s ON i.StoreId = s.id
-            //                    WHERE s.ManagerId = '{_managerId}'
-            //                    GROUP BY f.Id, f.title, s.Id;";
-
-            //var avgScore = $@"select FilmId, AVG(Score) as AvgScore from 
-            //                    Films join Inventories on Films.Id = Inventories.FilmId
-            //                    left JOIN Rentals ON Rentals.InventoryId = Inventories.Id 
-            //                    JOIN Stores ON Inventories.StoreId = Stores.Id 
-            //                    where ManagerId = '{_managerId}'
-            //                    group by FilmId";
-
-            //var delayCount = $@"select FilmId, COUNT(*) As NumberOfDelays from 
-            //                    Films join Inventories on Films.Id = Inventories.FilmId
-            //                    JOIN Rentals ON Rentals.InventoryId = Inventories.Id 
-            //                    JOIN Stores ON Inventories.StoreId = Stores.Id  
-            //                    WHERE Stores.ManagerId = '{_managerId}' 
-            //                    AND DATEDIFF(day, RentalDate, ReturnDate) > 14
-            //                    group by FilmId, StoreId";
-
             var query = $@"SELECT
                             f.Id AS FilmId,
                             f.Title,
@@ -131,6 +101,97 @@ namespace Movie_rental.Controllers
                     }
                 }
                 return View(rentalDetails);
+            }
+        }
+
+        public async Task<IActionResult> ActiveRentals()
+        {
+            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var query = $@"SELECT
+                            r.* 
+                        FROM
+                            Rentals r
+                        JOIN
+                            Inventories i ON r.InventoryId = i.Id
+                        JOIN
+                            Stores s ON i.StoreId = s.Id
+                        WHERE
+                            s.ManagerId = '{_managerId}'  
+                            AND (GETDATE() < r.ReturnDate OR r.ReturnDate IS NULL)";
+            List<Rental> activeRentals = new List<Rental>();
+            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = query;
+                _dbContext.Database.OpenConnection();
+                using (var result = command.ExecuteReader())
+                {
+                    while (result.Read())
+                    {
+                        var activeRental = new Rental();
+                        foreach (var property in activeRental.GetType().GetProperties())
+                        {
+                            try
+                            {
+                                var value = result[property.Name];
+                                if (value != DBNull.Value)
+                                {
+                                    property.SetValue(activeRental, value);
+                                }
+                            }
+                            catch
+                            {
+                                continue;
+                            }
+                        }
+                        activeRentals.Add(activeRental);
+                    }
+                }
+            }
+            return View(activeRentals);
+        }
+
+        public async Task<IActionResult> CheckReservation()
+        {
+            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var query = $@"SELECT
+                            r.* 
+                        FROM
+                            Reservations r
+                        JOIN
+                            Inventories i ON r.InventoryId = i.Id
+                        JOIN
+                            Stores s ON i.StoreId = s.Id
+                        WHERE
+                            s.ManagerId = '{_managerId}'";
+
+            List<Reservation> reservations = new List<Reservation>();
+            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = query;
+                _dbContext.Database.OpenConnection();
+                using (var result = command.ExecuteReader())
+                {
+                    while (result.Read())
+                    {
+                        var reservation = new Reservation();
+                        foreach (var property in reservation.GetType().GetProperties())
+                        {
+                            try
+                            {
+                                var value = result[property.Name];
+                                if (value != DBNull.Value)
+                                {
+                                    property.SetValue(reservation, value);
+                                }
+                            }
+                            catch
+                            {
+                                continue;
+                            }
+                        }
+                        reservations.Add(reservation);
+                    }
+                }
             }
         }
     }
