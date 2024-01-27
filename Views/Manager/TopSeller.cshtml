@@ -1,0 +1,25 @@
+﻿@model List<TopSellerModel>
+
+@{
+    ViewData["Title"] = "TopSeller";
+}
+
+<h1>Top Sellers</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Category</th>
+            <th scope="col">Film</th>
+            <th scope="col">Actor</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th scope="row">1</th>
+            <td>@Model[0].TopCategory</td>
+            <td>@Model[0].TopFilm</td>
+            <td>@(Model[0].FirstName + " " + Model[0].LastName)</td>
+        </tr>
+    </tbody>
+</table>

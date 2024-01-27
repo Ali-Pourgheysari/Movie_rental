@@ -7,6 +7,7 @@
             <th scope="col">#</th>
             <th scope="col">Address</th>
             <th scope="col">Submit</th>
+            <th scope="col">Check payments</th>
         </tr>
     </thead>
     <tbody>
@@ -21,6 +22,11 @@
                     </td>
                     <td>
                         <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <a class="text-white text-decoration-none" asp-action="PaymentDetails" asp-route-id="@Model[i].Id">Select</a>
+                        </button>
                     </td>
                 </tr>
             </form>

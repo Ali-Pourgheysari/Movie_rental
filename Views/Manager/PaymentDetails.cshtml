@@ -1,0 +1,32 @@
+﻿@model List<PaymentDetailsModel>
+
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Customer Name</th>
+            <th scope="col">Film title</th>
+            <th scope="col">Payment amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            <form method="post">
+                <input type="hidden" name="Id" value="@Model[i].FilmId" />
+                <input type="hidden" name="Id" value="@Model[i].CustomerId" />
+            <tr>
+                <th scope="row">@(i + 1)</th>
+                <td>
+                    <a asp-controller="Manager" asp-action="ChosenCustomer" asp-route-id="@Model[i].CustomerId" asp-route-storeId="@Model[i].StoreId">@Model[i].CustomerName</a>
+                </td>
+                <td>
+                    <a asp-controller="Manager" asp-action="ChosenFilm" asp-route-id="@Model[i].FilmId" asp-route-storeId="@Model[i].StoreId">@Model[i].FilmName</a>
+                </td>
+                <td>@Model[i].Amount</td>
+            </tr>
+            </form>
+        }
+    </tbody>
+</table>

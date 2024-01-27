@@ -242,6 +242,64 @@ namespace Movie_rental.Controllers
             return View(searchModel);
         }
 
+        public async Task<IActionResult> PaymentDetails(int id)
+        {
+            var query = $@"SELECT p.Amount AS Amount, u.Name AS CustomerName, u.Id AS CustomerId, f.Id AS FilmId, f.Title AS FilmName, StoreId
+                            FROM Payments P
+                            JOIN Rentals R ON P.RentalId = R.Id
+                            JOIN Inventories I ON R.InventoryId = I.Id
+                            JOIN Films f ON f.Id = I.FilmId
+                            JOIN [User] u ON u.Id = p.CustomerId
+                            WHERE StoreId = {id}";
 
+            return View(executeQuery.GetExecuteQuery<PaymentDetailsModel>(query));
+        }
+
+        public async Task<IActionResult> ChosenCustomer(string id, string storeId)
+        {
+            var query = $@"SELECT p.Amount, u.Name AS CustomerName, u.Id AS CustomerId, f.Id AS FilmId, f.Title AS FilmName
+                            FROM Payments P
+                            JOIN Rentals R ON P.RentalId = R.Id
+                            JOIN Inventories I ON R.InventoryId = I.Id
+                            JOIN Films f ON f.Id = I.FilmId
+                            JOIN [User] u ON u.Id = p.CustomerId
+                            WHERE u.Id = '{id}' AND StoreId = '{storeId}'";
+
+            return View("PaymentDetails", executeQuery.GetExecuteQuery<PaymentDetailsModel>(query));
+        }
+
+        public async Task<IActionResult> ChosenFilm(int id, string storeId)
+        {
+            var query = $@"SELECT p.Amount, u.Name AS CustomerName, u.Id AS CustomerId, f.Id AS FilmId, f.Title AS FilmName
+                            FROM Payments P
+                            JOIN Rentals R ON P.RentalId = R.Id
+                            JOIN Inventories I ON R.InventoryId = I.Id
+                            JOIN Films f ON f.Id = I.FilmId
+                            JOIN [User] u ON u.Id = p.CustomerId
+                            WHERE f.Id = {id} AND StoreId = '{storeId}'";
+
+            return View("PaymentDetails", executeQuery.GetExecuteQuery<PaymentDetailsModel>(query));
+        }
+
+        public async Task<IActionResult> TopSeller()
+        {
+            var query = $@"SELECT top(1)
+                            C.name AS TopCategory,
+                            F.Title AS TopFilm,
+                            A.FirstName AS FirstName,
+	                        A.LastName AS LastName
+                        FROM Rentals R
+                        JOIN Inventories I ON R.InventoryId = I.Id
+                        JOIN Films F ON I.FilmId = F.Id
+                        JOIN FilmCategories FC ON F.Id = FC.FilmId
+                        JOIN Categories C ON FC.CategoryId = C.Id
+                        JOIN FilmActors FA ON F.Id = FA.FilmId
+                        JOIN Actors A ON FA.ActorId = A.Id
+                        WHERE I.StoreId = '1'
+                        GROUP BY C.name, F.Title, A.FirstName, A.LastName
+                        ORDER BY COUNT(*) DESC";
+
+            return View(executeQuery.GetExecuteQuery<TopSellerModel>(query));
+        }
     }
 }
