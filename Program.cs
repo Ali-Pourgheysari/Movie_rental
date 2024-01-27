@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Movie_rental.Entities;
 using Microsoft.AspNetCore.Identity;
 using Movie_rental.Data;
+using Movie_rental.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddDbContext<MovieRentalDbContext>(
 builder.Services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = false)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<MovieRentalDbContext>();
+
+builder.Services.AddTransient<ExecuteQuery>();
 
 var app = builder.Build();
 app.MapRazorPages();

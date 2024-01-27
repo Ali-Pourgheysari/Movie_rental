@@ -2,26 +2,26 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Movie_rental.Data;
+using Movie_rental.DbConnectionUtils;
 using Movie_rental.Entities;
 using Movie_rental.Migrations;
 using Movie_rental.Models;
-using System.Data.SqlClient;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Movie_rental.Controllers
 {
     public class ManagerController : Controller
     {
         private readonly MovieRentalDbContext _dbContext;
+        private readonly ExecuteQuery executeQuery;
         private readonly UserManager<User> userManager;
         private readonly int _delayLimit;
         private string _managerId;
 
         public ManagerController(
-            MovieRentalDbContext dbContext,
+            ExecuteQuery executeQuery,
             UserManager<User> userManager)
         {
-            _dbContext = dbContext;
+            this.executeQuery = executeQuery;
             this.userManager = userManager;
             _delayLimit = 14;
         }
@@ -37,7 +37,7 @@ namespace Movie_rental.Controllers
                            JOIN Stores ON Inventories.StoreId = Stores.Id 
                            WHERE Stores.ManagerId = '{_managerId}'";
             
-            return View(GetExecuteQuery<CustomerInfo>(query));
+            return View(executeQuery.GetExecuteQuery<CustomerInfo>(query));
         }
 
         public async Task<IActionResult> RentalDetails()
@@ -63,7 +63,7 @@ namespace Movie_rental.Controllers
                         GROUP BY
                             f.Id, f.Title, S.Id;";
             
-            return View(GetExecuteQuery<RentalDetails>(query));
+            return View(executeQuery.GetExecuteQuery<RentalDetails>(query));
         }
 
         public async Task<IActionResult> AllRentals()
@@ -81,7 +81,7 @@ namespace Movie_rental.Controllers
                         WHERE
                             s.ManagerId = '{_managerId}'";
 
-            return View(GetExecuteQuery<Rental>(query));
+            return View(executeQuery.GetExecuteQuery<Rental>(query));
         }
 
         [HttpPost]
@@ -89,7 +89,7 @@ namespace Movie_rental.Controllers
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"UPDATE Rentals SET RentalDate = '{RentalDate}', ReturnDate = '{ReturnDate}' WHERE Id = {Id}";
-            PostExecuteQuery(query);
+            executeQuery.PostExecuteQuery(query);
             return RedirectToAction("AllRentals");
         }
 
@@ -111,7 +111,7 @@ namespace Movie_rental.Controllers
                         WHERE
                             s.ManagerId = '{_managerId}'";
 
-            return View(GetExecuteQuery<CheckReservation>(query));
+            return View(executeQuery.GetExecuteQuery<CheckReservation>(query));
         }
 
         [HttpPost]
@@ -120,8 +120,8 @@ namespace Movie_rental.Controllers
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var deleteFromReservationquery = $@"DELETE FROM Reservations WHERE Id = {reservationId}";
             var addToRentalQuery = $@"INSERT INTO Rentals (RentalDate, InventoryId, CustomerId) VALUES (GETDATE(), {inventoryId}, '{customerId}')";
-            PostExecuteQuery(deleteFromReservationquery);
-            PostExecuteQuery(addToRentalQuery);
+            executeQuery.PostExecuteQuery(deleteFromReservationquery);
+            executeQuery.PostExecuteQuery(addToRentalQuery);
             return RedirectToAction("CheckReservation");
         }
 
@@ -129,7 +129,7 @@ namespace Movie_rental.Controllers
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"SELECT * FROM Stores WHERE ManagerId = '{_managerId}'";
-            return View(GetExecuteQuery<Store>(query));
+            return View(executeQuery.GetExecuteQuery<Store>(query));
         }
 
         [HttpPost]
@@ -137,7 +137,7 @@ namespace Movie_rental.Controllers
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"UPDATE Stores SET Address = '{address}' WHERE Id = {id}";
-            PostExecuteQuery(query);
+            executeQuery.PostExecuteQuery(query);
             return RedirectToAction("StoresDetails");
         }
 
@@ -165,7 +165,7 @@ namespace Movie_rental.Controllers
                             f.Id, f.Title, c.Name, c.Id
                         ORDER BY AvgScore desc;";
 
-            return View("Films", GetExecuteQuery<FilmScoreCategory>(query));
+            return View("Films", executeQuery.GetExecuteQuery<FilmScoreCategory>(query));
         }
 
         public async Task<IActionResult> ChosenCategory(int id)
@@ -194,53 +194,8 @@ namespace Movie_rental.Controllers
                             f.Id, f.Title, c.Name, c.Id
                         ORDER BY AvgScore desc;";
 
-            return View("Films", GetExecuteQuery<FilmScoreCategory>(query));
+            return View("Films", executeQuery.GetExecuteQuery<FilmScoreCategory>(query));
 
-        }
-
-        public List<T> GetExecuteQuery<T>(string query) where T : new()
-        {
-            List<T> entities = new List<T>();
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                using (var result = command.ExecuteReader())
-                {
-                    while (result.Read())
-                    {
-                        var entity = new T();
-                        foreach (var property in entity.GetType().GetProperties())
-                        {
-                            try
-                            {
-                                var value = result[property.Name];
-                                if (value != DBNull.Value)
-                                {
-                                    property.SetValue(entity, value);
-                                }
-                            }
-                            catch
-                            {
-                                continue;
-                            }
-
-                        }
-                        entities.Add(entity);
-                    }
-                }
-            }
-            return entities;
-        }
-
-        private void PostExecuteQuery(string query)
-        {
-            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
-            {
-                command.CommandText = query;
-                _dbContext.Database.OpenConnection();
-                command.ExecuteNonQuery();
-            }
         }
 
     }
