@@ -1,0 +1,29 @@
+﻿@model List<FilmScoreCategory>
+
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Film title</th>
+            <th scope="col">Category</th>
+            <th scope="col">Average score</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            <form method="post">
+                <input type="hidden" name="Id" value="@Model[i].FilmId" />
+                <tr>
+                    <th scope="row">@(i + 1)</th>
+                    <td>@Model[i].FilmTitle</td>
+                    <td>
+                        <a asp-controller="Manager" asp-action="ChosenCategory" asp-route-id="@Model[i].CategoryId">@Model[i].CategoryName</a>
+                    </td>
+                    <td>@Model[i].AvgScore</td>
+                </tr>
+            </form>
+        }
+    </tbody>
+</table>

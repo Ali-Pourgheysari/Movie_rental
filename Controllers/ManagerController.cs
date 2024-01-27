@@ -6,6 +6,8 @@ using Movie_rental.Entities;
 using Movie_rental.Migrations;
 using Movie_rental.Models;
 using System.Data.SqlClient;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+
 namespace Movie_rental.Controllers
 {
     public class ManagerController : Controller
@@ -225,6 +227,140 @@ namespace Movie_rental.Controllers
                 command.ExecuteNonQuery();
             }
             return RedirectToAction("CheckReservation");
+        }
+
+        public async Task<IActionResult> StoresDetails()
+        {
+            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var query = $@"SELECT * FROM Stores WHERE ManagerId = '{_managerId}'";
+            List<Store> stores = new List<Store>();
+            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = query;
+                _dbContext.Database.OpenConnection();
+                using (var result = command.ExecuteReader())
+                {
+                    while (result.Read())
+                    {
+                        var store = new Store();
+                        foreach (var property in store.GetType().GetProperties())
+                        {
+                            try
+                            {
+                                var value = result[property.Name];
+                                if (value != DBNull.Value)
+                                {
+                                    property.SetValue(store, value);
+                                }
+                            }
+                            catch
+                            {
+                                continue;
+                            }
+                        }
+                        stores.Add(store);
+                    }
+                }
+            }
+            return View(stores);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> StoresDetails(string address, int id)
+        {
+            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var query = $@"UPDATE Stores SET Address = '{address}' WHERE Id = {id}";
+            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = query;
+                _dbContext.Database.OpenConnection();
+                command.ExecuteNonQuery();
+            }
+            return RedirectToAction("StoresDetails");
+        }
+
+        public async Task<IActionResult> Films()
+        {
+            var query = $@"SELECT
+                            f.Id AS FilmId,
+                            f.Title AS FilmTitle,
+	                        c.Id AS CategoryId,
+	                        c.Name AS CategoryName,
+                            AVG(r.Score) AS AvgScore
+                        FROM
+                            Inventories i
+                        JOIN
+                            Films f ON i.FilmId = f.Id
+                        JOIN
+	                        FilmCategories fc ON fc.FilmId = f.Id
+                        JOIN
+	                        Categories c ON c.Id = fc.CategoryId
+                        JOIN
+                            Rentals r ON i.Id = r.InventoryId
+                        JOIN
+                            Stores s ON i.StoreId = s.Id
+                        GROUP BY
+                            f.Id, f.Title, c.Name, c.Id
+                        ORDER BY AvgScore desc;";
+            
+            return View(FilmsConnection(query));
+        }
+
+        public async Task<IActionResult> ChosenCategory(int id)
+        {
+            string query = $@"SELECT
+                            f.Id AS FilmId,
+                            f.Title AS FilmTitle,
+                            c.Id AS CategoryId,
+                            c.Name AS CategoryName,
+                            AVG(r.Score) AS AvgScore
+                        FROM
+                            Inventories i
+                        JOIN
+                            Films f ON i.FilmId = f.Id
+                        JOIN
+                            FilmCategories fc ON fc.FilmId = f.Id
+                        JOIN
+                            Categories c ON c.Id = fc.CategoryId
+                        JOIN
+                            Rentals r ON i.Id = r.InventoryId
+                        JOIN
+                            Stores s ON i.StoreId = s.Id
+                        WHERE
+                            c.Id = {id}
+                        GROUP BY
+                            f.Id, f.Title, c.Name, c.Id
+                        ORDER BY AvgScore desc;";
+
+            return View("Films", FilmsConnection(query));
+
+        }
+
+        public List<FilmScoreCategory> FilmsConnection(string query)
+        {
+            List<FilmScoreCategory> filmScoreCategories = new List<FilmScoreCategory>();
+            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = query;
+                _dbContext.Database.OpenConnection();
+                using (var result = command.ExecuteReader())
+                {
+                    while (result.Read())
+                    {
+                        var filmScoreCategory = new FilmScoreCategory();
+                        foreach (var property in filmScoreCategory.GetType().GetProperties())
+                        {
+                            var value = result[property.Name];
+                            if (value != DBNull.Value)
+                            {
+                                property.SetValue(filmScoreCategory, value);
+                            }
+                        }
+                        filmScoreCategories.Add(filmScoreCategory);
+                    }
+                }
+            }
+            return filmScoreCategories;
         }
     }
 }

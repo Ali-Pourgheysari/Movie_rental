@@ -1,0 +1,29 @@
+﻿@model List<Store>
+
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Address</th>
+            <th scope="col">Submit</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            <form method="post">
+                <input type="hidden" name="Id" value="@Model[i].Id" />
+                <tr>
+                    <th scope="row">@(i + 1)</th>
+                    <td>
+                        <input name="Address" type="text" class="form-control" value="@Model[i].Address" />
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
+                    </td>
+                </tr>
+            </form>
+        }
+    </tbody>
+</table>
