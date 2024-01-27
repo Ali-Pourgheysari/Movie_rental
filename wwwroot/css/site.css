@@ -17,7 +17,68 @@ body {
     margin-bottom: 60px;
 }
 
-.container{
+.container {
     position: absolute;
     width: 100%;
 }
+
+.wrapper {
+    display:flex;
+    flex-direction:row;
+    justify-content:space-around;
+    min-width:100%;
+}
+
+.outer-div {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 2;
+}
+
+/*.upper-div {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    height: 100%;
+    margin: 0;
+}
+
+.lower-div{
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    height: 100%;
+    margin: 0;
+}*/
+/*.quadrant {
+    flex: 2;
+    overflow: auto;
+    padding: 10px;
+}
+*/
+/*#top-left {
+    order: 1;
+    align-self: flex-start;
+    flex-grow: 2;
+}
+
+#top-right {
+    order: 2;
+    align-self: flex-start;
+    flex-grow: 2;
+}
+
+#bottom-left {
+    order: 3;
+    align-self: flex-end;
+    flex-grow: 2;
+}
+
+#bottom-right {
+    order: 4;
+    align-self: flex-end;
+    flex-grow: 2;
+}*/

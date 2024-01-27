@@ -2,10 +2,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Movie_rental.Data;
-using Movie_rental.DbConnectionUtils;
+using Movie_rental.Services;
 using Movie_rental.Entities;
 using Movie_rental.Migrations;
 using Movie_rental.Models;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Movie_rental.Controllers
 {
@@ -197,6 +198,50 @@ namespace Movie_rental.Controllers
             return View("Films", executeQuery.GetExecuteQuery<FilmScoreCategory>(query));
 
         }
+
+        public async Task<IActionResult> Search()
+        {
+            SearchModel data = new SearchModel();
+            return View(data);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Search(string search)
+        {
+            string actorName = $@"SELECT FirstName, LastName
+                                FROM Actors
+                                WHERE FirstName LIKE '%{search}%'
+                                OR LastName LIKE '%{search}%';";
+
+            string filmTitleYear = $@"SELECT Title, ReleaseYear
+                                    FROM Films
+                                    WHERE Title LIKE '%{search}%'
+                                    OR ReleaseYear LIKE '%{search}%'; ";
+
+            string categoryName = $@"SELECT Name
+                                    FROM Categories
+                                    WHERE Name LIKE '%{search}%';";
+
+            string languageName = $@"SELECT Name
+                                    FROM Languages
+                                    WHERE Name LIKE '%{search}%';";
+
+            List<Actor> actors = executeQuery.GetExecuteQuery<Actor>(actorName);
+            List<Film> films = executeQuery.GetExecuteQuery<Film>(filmTitleYear);
+            List<Category> categories = executeQuery.GetExecuteQuery<Category>(categoryName);
+            List<Language> languages = executeQuery.GetExecuteQuery<Language>(languageName);
+
+            SearchModel searchModel = new SearchModel 
+            { 
+                Actors = actors,
+                Films = films, 
+                Categories = categories,
+                Languages = languages 
+            };   
+
+            return View(searchModel);
+        }
+
 
     }
 }

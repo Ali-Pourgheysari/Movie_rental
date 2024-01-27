@@ -1,0 +1,98 @@
+﻿@model SearchModel
+
+<div class="wrapper">
+
+    <div class="outer-div">
+            <div id="top-left" class="quadrant">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">First name</th>
+                            <th scope="col">Last name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model?.Actors?.Count; i++)
+                        {
+                            <tr>
+                                <th scope="row">@(i + 1)</th>
+                                <td>@Model.Actors[i].FirstName</td>
+                                <td>@Model.Actors[i].LastName</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="top-right" class="quadrant">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Film title</th>
+                            <th scope="col">Release year</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model?.Films?.Count; i++)
+                        {
+                            <tr>
+                                <th scope="row">@(i + 1)</th>
+                                <td>@Model.Films[i].Title</td>
+                                <td>@Model.Films[i].ReleaseYear</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div id="bottom-left" class="quadrant">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Category</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model?.Categories?.Count; i++)
+                        {
+                            <tr>
+                                <th scope="row">@(i + 1)</th>
+                                <td>@Model.Categories[i].Name</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="bottom-right" class="quadrant">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Language</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < Model?.Languages?.Count; i++)
+                        {
+                            <tr>
+                                <th scope="row">@(i + 1)</th>
+                                <td>@Model.Languages[i].Name</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+    </div>
+    <div>
+        <form method="post" class="form-inline my-2 my-lg-0" style="display:flex;flex-direction:row;">
+            <input class="form-control mr-sm-2" type="search" name="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+    </div>
+</div>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Movie_rental.Data;
+using Movie_rental.Entities;
 
 namespace Movie_rental.Services
 {
@@ -11,6 +12,7 @@ namespace Movie_rental.Services
         {
             this.dbContext = dbContext;
         }
+
         public List<T> GetExecuteQuery<T>(string query) where T : new()
         {
             List<T> entities = new List<T>();
