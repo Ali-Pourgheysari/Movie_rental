@@ -4,6 +4,7 @@
     {
         public DateTime RentalDate { get; set; }
         public DateTime ReturnDate { get; set; }
+        public float Score { get; set; }
         public int InventoryId { get; set; }
         public Inventory Inventory { get; set; }
         public string? CustomerId { get; set; }
