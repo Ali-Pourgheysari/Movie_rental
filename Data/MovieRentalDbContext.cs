@@ -51,10 +51,6 @@ namespace Movie_rental.Data
             builder.Entity<Manager>().ToTable("Manager").HasBaseType<User>();
             builder.Entity<Customer>().ToTable("Customer").HasBaseType<User>();
 
-            // Convert DateOnly to Date
-            builder.Entity<Rental>().Property(p => p.RentalDate).HasColumnType("date");
-            builder.Entity<Rental>().Property(p => p.ReturnDate).HasColumnType("date");
-
         }
 
         private void AddConstraint(ModelBuilder builder)

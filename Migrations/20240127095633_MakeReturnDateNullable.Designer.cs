@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Movie_rental.Data;
 
@@ -11,9 +12,11 @@ using Movie_rental.Data;
 namespace Movie_rental.Migrations
 {
     [DbContext(typeof(MovieRentalDbContext))]
-    partial class MovieRentalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240127095633_MakeReturnDateNullable")]
+    partial class MakeReturnDateNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,14 +55,14 @@ namespace Movie_rental.Migrations
                         new
                         {
                             Id = "12ef1baa-3601-4c1f-8873-3259bmanager",
-                            ConcurrencyStamp = "405d5319-46ba-45d7-8cba-4b0abb39b417",
+                            ConcurrencyStamp = "15b51895-33e8-421b-bb44-28c8eeeef863",
                             Name = "Manager",
                             NormalizedName = "MANAGER"
                         },
                         new
                         {
                             Id = "3ba53cbd-20ad-4684-8709-c662customer",
-                            ConcurrencyStamp = "e7206a99-b995-4fb1-b455-07a88705b9ed",
+                            ConcurrencyStamp = "cb0b7056-2280-43ca-937f-1950505ea794",
                             Name = "Customer",
                             NormalizedName = "CUSTOMER"
                         });
@@ -392,7 +395,7 @@ namespace Movie_rental.Migrations
                     b.Property<DateTime?>("ReturnDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<float?>("Score")
+                    b.Property<float>("Score")
                         .HasColumnType("real");
 
                     b.HasKey("Id");

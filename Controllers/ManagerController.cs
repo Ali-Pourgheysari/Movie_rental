@@ -12,6 +12,7 @@ namespace Movie_rental.Controllers
     {
         private readonly MovieRentalDbContext _dbContext;
         private readonly UserManager<User> userManager;
+        private readonly int _delayLimit;
         private string _managerId;
 
         public ManagerController(
@@ -20,6 +21,7 @@ namespace Movie_rental.Controllers
         {
             _dbContext = dbContext;
             this.userManager = userManager;
+            _delayLimit = 14;
         }
 
         public async Task<IActionResult> AllCustomers()
@@ -66,7 +68,7 @@ namespace Movie_rental.Controllers
                             COUNT(r.Id) AS NumberOfRentals,
                             COUNT(i.Id) AS FilmCopies,
                             AVG(r.Score) AS AvgScore,
-                            COUNT(CASE WHEN DATEDIFF(day, r.RentalDate, r.ReturnDate) > 14 THEN 1 END) AS NumberOfDelays
+                            COUNT(CASE WHEN DATEDIFF(day, r.RentalDate, r.ReturnDate) > {_delayLimit} THEN 1 END) AS NumberOfDelays
                         FROM
                             Inventories i
                         JOIN
@@ -154,17 +156,21 @@ namespace Movie_rental.Controllers
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"SELECT
-                            r.* 
+                            u.Id AS CustomerId, u.Name AS CustomerName, f.Title, r.Id AS ReservationId, i.Id AS InventoryId
                         FROM
                             Reservations r
                         JOIN
                             Inventories i ON r.InventoryId = i.Id
                         JOIN
                             Stores s ON i.StoreId = s.Id
+                        JOIN
+	                        Films f ON f.Id = r.Id
+                        JOIN
+	                        [User] u ON u.Id = r.CustomerId
                         WHERE
                             s.ManagerId = '{_managerId}'";
 
-            List<Reservation> reservations = new List<Reservation>();
+            List<CheckReservation> reservations = new List<CheckReservation>();
             using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
             {
                 command.CommandText = query;
@@ -173,26 +179,37 @@ namespace Movie_rental.Controllers
                 {
                     while (result.Read())
                     {
-                        var reservation = new Reservation();
+                        var reservation = new CheckReservation();
                         foreach (var property in reservation.GetType().GetProperties())
                         {
-                            try
+                            var value = result[property.Name];
+                            if (value != DBNull.Value)
                             {
-                                var value = result[property.Name];
-                                if (value != DBNull.Value)
-                                {
-                                    property.SetValue(reservation, value);
-                                }
-                            }
-                            catch
-                            {
-                                continue;
+                                property.SetValue(reservation, value);
                             }
                         }
                         reservations.Add(reservation);
                     }
                 }
             }
+            return View(reservations);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CheckReservation(int reservationId, int inventoryId, string customerId)
+        {
+            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var deleteFromReservationquery = $@"DELETE FROM Reservations WHERE Id = {reservationId}";
+            var addToRentalQuery = $@"INSERT INTO Rentals (RentalDate, InventoryId, CustomerId) VALUES (GETDATE(), {inventoryId}, '{customerId}')";
+            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = deleteFromReservationquery;
+                _dbContext.Database.OpenConnection();
+                command.ExecuteNonQuery();
+                command.CommandText = addToRentalQuery;
+                command.ExecuteNonQuery();
+            }
+            return RedirectToAction("CheckReservation");
         }
     }
 }

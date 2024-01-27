@@ -17,7 +17,7 @@
             <tr>
                 <th scope="row">@(i + 1)</th>
                 <td>@Model[i].RentalDate</td>
-                <td>@Model[i].ReturnDate</td>
+                <td>@(Model[i]?.ReturnDate?.ToString() ?? "No specified time")</td>
                 <td>@Model[i].CustomerId</td>
                 <td>@Model[i].InventoryId</td>
             </tr>
