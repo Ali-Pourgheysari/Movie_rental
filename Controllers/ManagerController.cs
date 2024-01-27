@@ -106,9 +106,10 @@ namespace Movie_rental.Controllers
             }
         }
 
-        public async Task<IActionResult> ActiveRentals()
+        public async Task<IActionResult> AllRentals()
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            // Active condition is checked in the view
             var query = $@"SELECT
                             r.* 
                         FROM
@@ -118,9 +119,9 @@ namespace Movie_rental.Controllers
                         JOIN
                             Stores s ON i.StoreId = s.Id
                         WHERE
-                            s.ManagerId = '{_managerId}'  
-                            AND (GETDATE() < r.ReturnDate OR r.ReturnDate IS NULL)";
-            List<Rental> activeRentals = new List<Rental>();
+                            s.ManagerId = '{_managerId}'";
+
+            List<Rental> AllRentals = new List<Rental>();
             using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
             {
                 command.CommandText = query;
@@ -145,11 +146,25 @@ namespace Movie_rental.Controllers
                                 continue;
                             }
                         }
-                        activeRentals.Add(activeRental);
+                        AllRentals.Add(activeRental);
                     }
                 }
             }
-            return View(activeRentals);
+            return View(AllRentals);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AllRentals(DateTime RentalDate, DateTime ReturnDate, int Id)
+        {
+            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var query = $@"UPDATE Rentals SET RentalDate = '{RentalDate}', ReturnDate = '{ReturnDate}' WHERE Id = {Id}";
+            using (var command = _dbContext.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = query;
+                _dbContext.Database.OpenConnection();
+                command.ExecuteNonQuery();
+            }
+            return RedirectToAction("AllRentals");
         }
 
         public async Task<IActionResult> CheckReservation()
