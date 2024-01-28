@@ -41,32 +41,6 @@ namespace Movie_rental.Controllers
             return View(executeQuery.GetExecuteQuery<CustomerInfo>(query));
         }
 
-        public async Task<IActionResult> RentalDetails()
-        {
-            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
-            var query = $@"SELECT
-                            f.Id AS FilmId,
-                            f.Title,
-                            COUNT(r.Id) AS NumberOfRentals,
-                            COUNT(i.Id) AS FilmCopies,
-                            AVG(r.Score) AS AvgScore,
-                            COUNT(CASE WHEN DATEDIFF(day, r.RentalDate, r.ReturnDate) > {_delayLimit} THEN 1 END) AS NumberOfDelays
-                        FROM
-                            Inventories i
-                        JOIN
-                            Films f ON i.FilmId = f.Id
-                        JOIN
-                            Stores s ON i.StoreId = s.Id
-                        LEFT JOIN
-                            Rentals r ON i.Id = r.InventoryId
-                        WHERE
-                            s.ManagerId = '{_managerId}'
-                        GROUP BY
-                            f.Id, f.Title, S.Id;";
-            
-            return View(executeQuery.GetExecuteQuery<RentalDetails>(query));
-        }
-
         public async Task<IActionResult> AllRentals()
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
@@ -126,13 +100,6 @@ namespace Movie_rental.Controllers
             return RedirectToAction("CheckReservation");
         }
 
-        public async Task<IActionResult> StoresDetails()
-        {
-            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
-            var query = $@"SELECT * FROM Stores WHERE ManagerId = '{_managerId}'";
-            return View(executeQuery.GetExecuteQuery<Store>(query));
-        }
-
         [HttpPost]
         public async Task<IActionResult> StoresDetails(string address, int id)
         {
@@ -140,106 +107,6 @@ namespace Movie_rental.Controllers
             var query = $@"UPDATE Stores SET Address = '{address}' WHERE Id = {id}";
             executeQuery.PostExecuteQuery(query);
             return RedirectToAction("StoresDetails");
-        }
-
-        public async Task<IActionResult> Films()
-        {
-            var query = $@"SELECT
-                            f.Id AS FilmId,
-                            f.Title AS FilmTitle,
-	                        c.Id AS CategoryId,
-	                        c.Name AS CategoryName,
-                            AVG(r.Score) AS AvgScore
-                        FROM
-                            Inventories i
-                        JOIN
-                            Films f ON i.FilmId = f.Id
-                        JOIN
-	                        FilmCategories fc ON fc.FilmId = f.Id
-                        JOIN
-	                        Categories c ON c.Id = fc.CategoryId
-                        JOIN
-                            Rentals r ON i.Id = r.InventoryId
-                        JOIN
-                            Stores s ON i.StoreId = s.Id
-                        GROUP BY
-                            f.Id, f.Title, c.Name, c.Id
-                        ORDER BY AvgScore desc;";
-
-            return View("Films", executeQuery.GetExecuteQuery<FilmScoreCategory>(query));
-        }
-
-        public async Task<IActionResult> ChosenCategory(int id)
-        {
-            string query = $@"SELECT
-                            f.Id AS FilmId,
-                            f.Title AS FilmTitle,
-                            c.Id AS CategoryId,
-                            c.Name AS CategoryName,
-                            AVG(r.Score) AS AvgScore
-                        FROM
-                            Inventories i
-                        JOIN
-                            Films f ON i.FilmId = f.Id
-                        JOIN
-                            FilmCategories fc ON fc.FilmId = f.Id
-                        JOIN
-                            Categories c ON c.Id = fc.CategoryId
-                        JOIN
-                            Rentals r ON i.Id = r.InventoryId
-                        JOIN
-                            Stores s ON i.StoreId = s.Id
-                        WHERE
-                            c.Id = {id}
-                        GROUP BY
-                            f.Id, f.Title, c.Name, c.Id
-                        ORDER BY AvgScore desc;";
-
-            return View("Films", executeQuery.GetExecuteQuery<FilmScoreCategory>(query));
-
-        }
-
-        public async Task<IActionResult> Search()
-        {
-            SearchModel data = new SearchModel();
-            return View(data);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Search(string search)
-        {
-            string actorName = $@"SELECT FirstName, LastName
-                                FROM Actors
-                                WHERE FirstName LIKE '%{search}%'
-                                OR LastName LIKE '%{search}%';";
-
-            string filmTitleYear = $@"SELECT Title, ReleaseYear
-                                    FROM Films
-                                    WHERE Title LIKE '%{search}%'
-                                    OR ReleaseYear LIKE '%{search}%'; ";
-
-            string categoryName = $@"SELECT Name
-                                    FROM Categories
-                                    WHERE Name LIKE '%{search}%';";
-
-            string languageName = $@"SELECT Name
-                                    FROM Languages
-                                    WHERE Name LIKE '%{search}%';";
-
-            List<Actor> actors = executeQuery.GetExecuteQuery<Actor>(actorName);
-            List<Film> films = executeQuery.GetExecuteQuery<Film>(filmTitleYear);
-            List<Category> categories = executeQuery.GetExecuteQuery<Category>(categoryName);
-            List<Language> languages = executeQuery.GetExecuteQuery<Language>(languageName);
-
-            SearchModel searchModel = new SearchModel 
-            { 
-                Actors = actors,
-                Films = films, 
-                Categories = categories,
-                Languages = languages 
-            };   
-
-            return View(searchModel);
         }
 
         public async Task<IActionResult> PaymentDetails(int id)

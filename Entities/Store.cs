@@ -2,6 +2,7 @@
 {
     public class Store : BaseEntity
     {
+        public string Name { get; set; }
         public string ManagerId { get; set; }
         public Manager Manager { get; set; }
         public string Address { get; set; }

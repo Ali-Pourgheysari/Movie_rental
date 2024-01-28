@@ -1,8 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
-@inject UserManager<User> UserManager
-
-
-<header>
+﻿<header>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
@@ -15,22 +11,10 @@
                         <a class="nav-link" asp-area="" asp-controller="Manager" asp-action="AllCustomers">All customers</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Manager" asp-action="RentalDetails">Rental details</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" asp-area="" asp-controller="Manager" asp-action="AllRentals">All rentals</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Manager" asp-action="StoresDetails">Stores details</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" asp-area="" asp-controller="Manager" asp-action="CheckReservation">Check reservation</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Manager" asp-action="Films">Films</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Manager" asp-action="Search">Search</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="" asp-controller="Manager" asp-action="TopSeller">Top seller</a>
@@ -38,20 +22,22 @@
                 }
                 @if(User.IsInRole("Customer"))
                 {
+
+                }
+                @*show below items to the user who authenticates*@
+                @if (User.Identity.IsAuthenticated)
+                {
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Customer" asp-action="AllFilms">All films</a>
+                        <a class="nav-link" asp-area="" asp-controller="Shared" asp-action="StoresDetails">Stores details</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Customer" asp-action="AllStores">All stores</a>
+                        <a class="nav-link" asp-area="" asp-controller="Shared" asp-action="Films">Films</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Customer" asp-action="AllRentals">All rentals</a>
+                        <a class="nav-link" asp-area="" asp-controller="Shared" asp-action="RentalDetails">Rental details</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Customer" asp-action="AllCustomers">All customers</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Customer" asp-action="AllStaff">All staff</a>
+                        <a class="nav-link" asp-area="" asp-controller="Shared" asp-action="Search">Search</a>
                     </li>
                 }
                 <li>

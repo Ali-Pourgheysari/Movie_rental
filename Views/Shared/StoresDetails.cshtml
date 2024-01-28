@@ -1,13 +1,16 @@
 ﻿@model List<Store>
 
-
 <table class="table table-striped">
     <thead>
         <tr>
             <th scope="col">#</th>
+            <th scope="col">Store name</th>
             <th scope="col">Address</th>
-            <th scope="col">Submit</th>
-            <th scope="col">Check payments</th>
+            @if (User.IsInRole("Manager"))
+            {
+                <th scope="col">Submit</th>
+                <th scope="col">Check payments</th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -17,17 +20,25 @@
                 <input type="hidden" name="Id" value="@Model[i].Id" />
                 <tr>
                     <th scope="row">@(i + 1)</th>
-                    <td>
-                        <input name="Address" type="text" class="form-control" value="@Model[i].Address" />
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-sm btn-primary">
-                            <a class="text-white text-decoration-none" asp-action="PaymentDetails" asp-route-id="@Model[i].Id">Select</a>
-                        </button>
-                    </td>
+                    <td>@Model[i].Name</td>
+                    @if (User.IsInRole("Manager"))
+                    {
+                        <td>
+                            <input name="Address" type="text" class="form-control" value="@Model[i].Address" />
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <a class="text-white text-decoration-none" asp-controller="Manager" asp-action="PaymentDetails" asp-route-id="@Model[i].Id">Select</a>
+                            </button>
+                        </td>
+                    }
+                    else
+                    {
+                        <td>@Model[i].Address</td>
+                    }
                 </tr>
             </form>
         }

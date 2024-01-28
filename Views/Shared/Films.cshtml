@@ -19,7 +19,7 @@
                     <th scope="row">@(i + 1)</th>
                     <td>@Model[i].FilmTitle</td>
                     <td>
-                        <a asp-controller="Manager" asp-action="ChosenCategory" asp-route-id="@Model[i].CategoryId">@Model[i].CategoryName</a>
+                        <a asp-controller="Shared" asp-action="ChosenCategory" asp-route-id="@Model[i].CategoryId">@Model[i].CategoryName</a>
                     </td>
                     <td>@Model[i].AvgScore.ToString("0.##")</td>
                 </tr>
