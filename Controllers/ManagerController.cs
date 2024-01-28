@@ -107,7 +107,7 @@ namespace Movie_rental.Controllers
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"UPDATE Stores SET Address = '{address}' WHERE Id = {id}";
             executeQuery.PostExecuteQuery(query);
-            return RedirectToAction("StoresDetails");
+            return RedirectToAction(controllerName: "Shared", actionName: "StoresDetails");
         }
 
         public async Task<IActionResult> ChosenCustomer(string id, string storeId)

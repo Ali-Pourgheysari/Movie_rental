@@ -25,19 +25,21 @@
                 <td>@Model[i].Name</td>
                 @if (User.IsInRole("Manager"))
                 {
-                    <td>
-                        <input name="Address" type="text" class="form-control" value="@Model[i].Address" />
-                    </td>
-                    <td>
-                        <form method="post">
-                            <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
-                        </form>
-                    </td>
+                    <form method="post" asp-controller="Manager" asp-action="StoresDetails">
+                        <td>
+                            <input name="address" type="text" class="form-control" value="@Model[i].Address" />
+                        </td>
+                        <td>
+                                <input type="hidden" name="id" value="@Model[i].Id" />
+                                <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
+                        </td>
+                    </form>
                     <td>
                         <button type="submit" class="btn btn-sm btn-primary">
                             <a class="text-white text-decoration-none" asp-controller="Manager" asp-action="PaymentDetails" asp-route-id="@Model[i].Id">Select</a>
                         </button>
                     </td>
+
                 }
                 else
                 {
