@@ -58,24 +58,28 @@
                 }
             </tr>
         }
-        <tr>
-            <th>
-                <form method="post" asp-action="AddStore" asp-controller="Manager" >
-                    <input name="managerId" type="text" value="@ViewBag.ManagerId" hidden />
-                    @if (Model?.Count < _storeLimit)
-                    {
-                        <button type="submit" class="btn btn-sm btn-danger">&#x2b</button>
-                    }
-                    else
-                    {
-                        <button disabled type="submit" class="btn btn-sm btn-danger">&#x2b</button>
-                    } 
-                </form>
-            </th>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
+        @if(User.IsInRole("Manager"))
+        {
+            
+            <tr>
+                <th>
+                    <form method="post" asp-action="AddStore" asp-controller="Manager" >
+                        <input name="managerId" type="text" value="@ViewBag.ManagerId" hidden />
+                        @if (Model?.Count < _storeLimit)
+                        {
+                            <button type="submit" class="btn btn-sm btn-danger">&#x2b</button>
+                        }
+                        else
+                        {
+                            <button disabled type="submit" class="btn btn-sm btn-danger">&#x2b</button>
+                        } 
+                    </form>
+                </th>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        }
     </tbody>
 </table>

@@ -17,6 +17,7 @@ namespace Movie_rental.Controllers
         private int _costPerDay;
         private int _penalty;
         private int _customerDelayCount;
+        private int _limitOfActiveMocties;
 
         public CustomerController(
         ExecuteQuery executeQuery,
@@ -28,6 +29,7 @@ namespace Movie_rental.Controllers
             _costPerDay = 2;
             _penalty = 3;
             _customerDelayCount = 10;
+            _limitOfActiveMocties = 3;
         }
         [HttpGet]
         public async Task<IActionResult> RentalHistory()
@@ -114,6 +116,30 @@ namespace Movie_rental.Controllers
                                 FROM Customer
                                 WHERE Id = '{customerId}'";
 
+            var nOfActiveAndReserveForCustomer = $@"WITH ActiveMovies AS (
+                                                    SELECT COUNT(*) AS NumberOfActiveMovies
+                                                    FROM Inventories I
+                                                    JOIN Rentals R ON I.Id = R.InventoryId
+                                                    WHERE I.StoreId = '{id}'
+                                                    AND R.CustomerId = '{customerId}' 
+                                                    AND (R.ReturnDate IS NULL OR R.ReturnDate > GETDATE())
+                                                ),
+                                                ReservedMovies AS (
+                                                    SELECT COUNT(*) AS NumberOfReservedMovies
+                                                    FROM Reservations RES
+                                                    JOIN Inventories I ON RES.InventoryId = I.Id
+                                                    WHERE I.StoreId = '{id}'
+                                                    AND RES.CustomerId = '{customerId}')
+
+                                                SELECT NumberOfActiveMovies + NumberOfReservedMovies AS TotalMovies
+                                                FROM ActiveMovies, ReservedMovies;";
+
+            var NumberOfActiveMovies = executeQuery.GetExecuteQuery<StoreDetailsModel>(nOfActiveAndReserveForCustomer).FirstOrDefault();
+            if(NumberOfActiveMovies.TotalMovies >= _limitOfActiveMocties)
+            {
+                ViewData["ShowAlert"] = true;
+                ViewData["AlertMessage"] = $"You have more than {_limitOfActiveMocties} active or reserved movies. You can't make a reservation.";
+            }
             var customer = executeQuery.GetExecuteQuery<Customer>(delayCountQuery).FirstOrDefault();
             if (customer.DelayCount > _customerDelayCount)
             {
