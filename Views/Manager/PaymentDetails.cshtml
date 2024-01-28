@@ -13,9 +13,6 @@
     <tbody>
         @for (var i = 0; i < Model.Count; i++)
         {
-            <form method="post">
-                <input type="hidden" name="Id" value="@Model[i].FilmId" />
-                <input type="hidden" name="Id" value="@Model[i].CustomerId" />
             <tr>
                 <th scope="row">@(i + 1)</th>
                 <td>
@@ -24,9 +21,18 @@
                 <td>
                     <a asp-controller="Manager" asp-action="ChosenFilm" asp-route-id="@Model[i].FilmId" asp-route-storeId="@Model[i].StoreId">@Model[i].FilmName</a>
                 </td>
-                <td>@Model[i].Amount</td>
+                <td>@(Model[i].Amount)$</td>
             </tr>
-            </form>
         }
+        <tr>
+            <th>
+                Total price:
+            </th>
+            <td></td>
+            <td></td>
+            <td class="fw-bold">
+                @Model.Sum(x => x.Amount)$
+            </td>   
+        </tr>
     </tbody>
 </table>

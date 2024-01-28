@@ -1,10 +1,19 @@
 ﻿@model List<RentalDetails>
 
+@{
+    var costPerDayInLimit = 2;
+    var costPerDayOutLimit = 5;
+    var limit = 14;
+}
 <table class="table table-striped">
     <thead>
         <tr>
             <th scope="col">#</th>
             <th scope="col">Movie title</th>
+            <th scope="col">Rental date</th>
+            <th scope="col">Return date</th>
+            <th scope="col">Days left to return</th>
+            <th scope="col">My score</th>
             <th scope="col">Status</th>
             <th scope="col">Action</th>
         </tr>
@@ -15,29 +24,64 @@
             <tr>
                 <th scope="row">@(i + 1)</th>
                 <td>@Model[i].Title</td>
-                @if (Model[i].ReturnDate > DateTime.Now)
+                <td>@Model[i].RentalDate</td>
+                <td>@Model[i].ReturnDate</td>
+                @if (Model[i].ReturnDate > DateTime.Now || Model[i].ReturnDate == null)
                 {
-                    <td>
-                        <strong>
-                            <span class="text-success">Active</span>
-                        </strong>
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-sm btn-primary">Return film</button>
-                    </td>
+                    if (Model[i].DaysLeftToReturn < 0)
+                    {
+                        <td class="text-danger fw-bold">@Model[i].DaysLeftToReturn</td>
+                    }
+                    else
+                    {
+                        <td class="text-success fw-bold">@Model[i].DaysLeftToReturn</td>
+                    }
+                    <form method="post">
+                            <input type="hidden" name="rentalId" value="@Model[i].RentalId" />
+                        <td>
+                            <input type="number" name="score" class="form-control" min="0" max="10" value="0" step="0.01" />
+                        </td>
+                        <td>
+                            <strong>
+                                <span class="text-success">Active</span>
+                            </strong>
+                        </td>
+                        <td>
+                            @if (DateTime.Now.Day - Model[i].RentalDate.Day > 0)
+                            {
+                            <button onclick="submitForm('#score-form-@i')" type="submit" class="btn btn-sm btn-primary">Return film</button>
+                            }
+                            else
+                            {
+                            <button disabled type="submit" class="btn btn-sm btn-primary">Return film</button>
+                            <small class="text-warning fw-bold">You can't return film in the same day</small>
+                            }
+                        </td>
+                    </form>
                 }
                 else
                 {
+                    <td></td>
+                    <td>@Model[i].MyScore.ToString("0.##")</td>
                     <td>
                         <strong>
                             <span class="text-danger">Inactive</span>
                         </strong>
                     </td>
                     <td>
-                        <button disabled type="button" class="btn btn-sm btn-primary">Return film</button>
+                        <form method="post">
+                            <button disabled type="submit" class="btn btn-sm btn-primary">Return film</button>
+                            <small class="text-warning fw-bold">Film already returned</small>
+                        </form>
                     </td>
                 }
             </tr>
         }
     </tbody>
 </table>
+
+<script>
+    function submitForm(formId) {
+        document.getElementById(formId).submit();
+    }
+</script>

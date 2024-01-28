@@ -13,17 +13,14 @@
     <tbody>
         @for (var i = 0; i < Model.Count; i++)
         {
-            <form method="post">
-                <input type="hidden" name="Id" value="@Model[i].FilmId" />
-                <tr>
-                    <th scope="row">@(i + 1)</th>
-                    <td>@Model[i].FilmTitle</td>
-                    <td>
-                        <a asp-controller="Manager" asp-action="ChosenCategory" asp-route-id="@Model[i].CategoryId">@Model[i].CategoryName</a>
-                    </td>
-                    <td>@Model[i].AvgScore.ToString("0.##")</td>
-                </tr>
-            </form>
+            <tr>
+                <th scope="row">@(i + 1)</th>
+                <td>@Model[i].FilmTitle</td>
+                <td>
+                    <a asp-controller="Shared" asp-action="ChosenCategory" asp-route-id="@Model[i].CategoryId">@Model[i].CategoryName</a>
+                </td>
+                <td>@Model[i].AvgScore.ToString("0.##")</td>
+            </tr>
         }
     </tbody>
 </table>

@@ -14,35 +14,39 @@
         @for (var i = 0; i < Model.Count; i++)
         {
             <tr>
-                <form method="post">
-                    <input type="hidden" name="filmId" value="@Model[i].FilmId" />
-                    <input type="hidden" name="inventoryId" value="@Model[i].InventoryId" />
-                    <th scope="row">@(i + 1)</th>
-                    <td>@Model[i].FilmTitle</td>
+                <th scope="row">@(i + 1)</th>
+                <td>@Model[i].FilmTitle</td>
 
-                    @if (Model[i].AvailableCopies > 0)
-                    {
+                @if (Model[i].AvailableCopies > 0)
+                {
                     <td>
                         <strong>
                             <span class="text-success">Available</span>
                         </strong>
                     </td>
                     <td>
-                        <button type="submit" class="btn btn-sm btn-primary">Select</button>
+                        <form method="post">
+                            <input type="hidden" name="filmId" value="@Model[i].FilmId" />
+                            <input type="hidden" name="inventoryId" value="@Model[i].InventoryId" />
+                            <button type="submit" class="btn btn-sm btn-primary">Select</button>
+                        </form>
                     </td>
-                    }
-                    else
-                    {
+                }
+                else
+                {
                     <td>
                         <strong>
                             <span class="text-danger">Unavailable</span>
                         </strong>
                     </td>
                     <td>
-                        <button disabled type="button" class="btn btn-sm btn-primary">Select</button>
+                        <form method="post">
+                            <input type="hidden" name="filmId" value="@Model[i].FilmId" />
+                            <input type="hidden" name="inventoryId" value="@Model[i].InventoryId" />
+                            <button disabled type="button" class="btn btn-sm btn-primary">Select</button>
+                        </form>
                     </td>
-                    }
-                </form>
+                }
             </tr>
         }
     </tbody>

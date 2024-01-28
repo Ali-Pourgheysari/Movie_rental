@@ -20,36 +20,36 @@
     <tbody>
         @for (var i = 0; i < Model.Count; i++)
         {
-            <form method="post">
-                <input type="hidden" name="Id" value="@Model[i].Id" />
-                <tr>
-                    <th scope="row">@(i + 1)</th>
-                    <td>@Model[i].Name</td>
-                    @if (User.IsInRole("Manager"))
-                    {
-                        <td>
-                            <input name="Address" type="text" class="form-control" value="@Model[i].Address" />
-                        </td>
-                        <td>
+
+            <tr>
+                <th scope="row">@(i + 1)</th>
+                <td>@Model[i].Name</td>
+                @if (User.IsInRole("Manager"))
+                {
+                    <td>
+                        <input name="Address" type="text" class="form-control" value="@Model[i].Address" />
+                    </td>
+                    <td>
+                        <form method="post">
                             <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
-                        </td>
-                        <td>
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <a class="text-white text-decoration-none" asp-controller="Manager" asp-action="PaymentDetails" asp-route-id="@Model[i].Id">Select</a>
-                            </button>
-                        </td>
-                    }
-                    else
-                    {
-                        <td>@Model[i].Address</td>
-                        <td>
-                            <button type="submit" class="btn btn-sm btn-primary">
-                                <a class="text-white text-decoration-none" asp-controller="Customer" asp-action="Reservation" asp-route-id="@Model[i].Id">Select</a>
-                            </button>
-                        </td>
-                    }
-                </tr>
-            </form>
+                        </form>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <a class="text-white text-decoration-none" asp-controller="Manager" asp-action="PaymentDetails" asp-route-id="@Model[i].Id">Select</a>
+                        </button>
+                    </td>
+                }
+                else
+                {
+                    <td>@Model[i].Address</td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <a class="text-white text-decoration-none" asp-controller="Customer" asp-action="Reservation" asp-route-id="@Model[i].Id">Select</a>
+                        </button>
+                    </td>
+                }
+            </tr>
         }
     </tbody>
 </table>

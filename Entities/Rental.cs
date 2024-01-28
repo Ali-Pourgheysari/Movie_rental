@@ -11,7 +11,7 @@ namespace Movie_rental.Entities
         public Inventory Inventory { get; set; }
         public string? CustomerId { get; set; }
         public Customer? Customer { get; set; }
-        public ICollection<Payment> payments { get; set; }
+        public Payment? Payment { get; set; }
 
     }
 }

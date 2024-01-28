@@ -1,9 +1,5 @@
 ﻿@model List<Rental>
 
-<!-- Include the necessary CSS and JavaScript files for Bootstrap Datetimepicker -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.7.14/css/bootstrap-datetimepicker.min.css">
-
 <table class="table table-striped">
     <thead>
         <tr>
@@ -19,46 +15,47 @@
     <tbody>
         @for (var i = 0; i < Model.Count; i++)
         {
-            <form method="post">
-                <input type="hidden" name="Id" value="@Model[i].Id" />
-                <tr>
-                    <th scope="row">@(i + 1)</th>
-                    <td>
-                        <div class="input-group date">
-                            <input name="RentalDate" type="text" class="form-control datetimepicker" value="@Model[i].RentalDate.ToString("yyyy-MM-dd HH:mm:ss")" />
-                            <span class="input-group-addon">
-                                <span class="glyphicon glyphicon-calendar"></span>
-                            </span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="input-group date">
-                            <input name="ReturnDate" type="text" class="form-control datetimepicker" value="@((Model[i]?.ReturnDate != null) ? Model[i]?.ReturnDate?.ToString("yyyy-MM-dd HH:mm:ss") : "No specified time")" />
-                            <span class="input-group-addon">
-                                <span class="glyphicon glyphicon-calendar"></span>
-                            </span>
-                        </div>
-                    </td>
-                    <td>@Model[i].CustomerId</td>
-                    <td>@Model[i].InventoryId</td>
-                    <td>
-                        <strong>
+
+            <tr>
+                <form method="post">
+                <th scope="row">@(i + 1)</th>
+                <td>
+                    <div class="input-group date">
+                        <input name="RentalDate" type="text" class="form-control datetimepicker" value="@Model[i].RentalDate.ToString("yyyy-MM-dd HH:mm:ss")" />
+                        <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <div class="input-group date">
+                        <input name="ReturnDate" type="text" class="form-control datetimepicker" value="@((Model[i]?.ReturnDate != null) ? Model[i]?.ReturnDate?.ToString("yyyy-MM-dd HH:mm:ss") : "No specified time")" />
+                        <span class="input-group-addon">
+                            <span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </td>
+                <td>@Model[i].CustomerId</td>
+                <td>@Model[i].InventoryId</td>
+                <td>
+                    <strong>
                             @*check if current date is lower than ReturnDate*@
                             @if (Model[i].ReturnDate == null || Model[i].ReturnDate > DateTime.Now)
                             {
-                                <span class="text-success">Active</span>
+                            <span class="text-success">Active</span>
                             }
                             else
                             {
-                                <span class="text-danger">Inactive</span>
+                            <span class="text-danger">Inactive</span>
                             }
-                        </strong>
-                    </td>
-                    <td>
+                    </strong>
+                </td>
+                <td>
+                    <input type="hidden" name="Id" value="@Model[i].Id" />
                     <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
-                    </td>
-                </tr>
-            </form>
+                </td>
+                </form>
+            </tr>
         }
     </tbody>
 </table>

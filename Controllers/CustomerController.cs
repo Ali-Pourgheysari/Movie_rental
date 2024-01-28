@@ -12,6 +12,8 @@ namespace Movie_rental.Controllers
         private ExecuteQuery executeQuery;
         private UserManager<User> userManager;
         private int _delayLimit;
+        private int _costPerDay;
+        private int _penalty;
 
         public CustomerController(
         ExecuteQuery executeQuery,
@@ -20,8 +22,10 @@ namespace Movie_rental.Controllers
             this.executeQuery = executeQuery;
             this.userManager = userManager;
             _delayLimit = 14;
+            _costPerDay = 2;
+            _penalty = 3;
         }
-
+        [HttpGet]
         public async Task<IActionResult> RentalHistory()
         {
             var customerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
@@ -29,7 +33,11 @@ namespace Movie_rental.Controllers
                             f.Id AS FilmId,
                             f.Title,
 	                        r.CustomerId,
-                            r.ReturnDate
+	                        r.RentalDate,
+                            r.ReturnDate,
+	                        r.Id AS RentalId,
+                            r.Score AS MyScore,
+	                        {_delayLimit} - DATEDIFF(day, r.RentalDate, GETDATE()) AS DaysLeftToReturn
                         FROM
                             Inventories i
                         JOIN
@@ -40,12 +48,49 @@ namespace Movie_rental.Controllers
                             Rentals r ON i.Id = r.InventoryId
                         WHERE 
 	                        r.CustomerId = '{customerId}'
-                        GROUP BY f.Id, f.Title, r.CustomerId";
-
+                        GROUP BY f.Id, f.Title, r.CustomerId, r.RentalDate, r.ReturnDate, r.Id, r.Score";
 
             return View(executeQuery.GetExecuteQuery<RentalDetails>(query));
         }
 
+        [HttpPost]
+        public async Task<IActionResult> RentalHistory(int rentalId, double score)
+        {
+            var customerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var query = $@"UPDATE Rentals
+                            SET Score = '{score}'
+                            WHERE Id = '{rentalId}' AND CustomerId = '{customerId}'";
+
+            executeQuery.PostExecuteQuery(query);
+
+            var returnDateQuery = $@"UPDATE Rentals
+                            SET ReturnDate = GETDATE()
+                            WHERE Id = '{rentalId}'";
+
+            executeQuery.PostExecuteQuery(returnDateQuery);
+
+            // Update Payments
+            var paymentQuery = $@"INSERT INTO Payments(CustomerId, RentalId, Amount)
+                            SELECT '{customerId}', '{rentalId}', (
+                                SELECT
+                                    CASE
+                                        WHEN DATEDIFF(DAY, RentalDate, ReturnDate) < '{_delayLimit}' THEN
+                                            (DATEDIFF(DAY, RentalDate, ReturnDate) * '{_costPerDay}')
+                                        ELSE
+                                            ((DATEDIFF(DAY, RentalDate, ReturnDate) * '{_costPerDay}')
+                                            + (DATEDIFF(DAY, RentalDate, ReturnDate) - '{_delayLimit}') * '{_penalty}')
+                                    END AS RentalCost
+                                FROM
+                                    Rentals
+                                WHERE Id = '{rentalId}'
+                            )";
+
+            executeQuery.PostExecuteQuery(paymentQuery);
+            return RedirectToAction("RentalHistory");
+
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Reservation(int id)
         {
             //Available copies = Total copies - Rented copies - Reserved copies
