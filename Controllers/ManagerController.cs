@@ -7,12 +7,12 @@ using Movie_rental.Entities;
 using Movie_rental.Migrations;
 using Movie_rental.Models;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Movie_rental.Controllers
 {
     public class ManagerController : Controller
     {
-        private readonly MovieRentalDbContext _dbContext;
         private readonly ExecuteQuery executeQuery;
         private readonly UserManager<User> userManager;
         private readonly int _delayLimit;

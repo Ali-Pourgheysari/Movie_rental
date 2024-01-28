@@ -17,7 +17,9 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Movie_rental.Areas.Identity.Pages.Account.Manage;
 using Movie_rental.Data;
 using Movie_rental.Entities;
 
@@ -107,6 +109,11 @@ namespace Movie_rental.Areas.Identity.Pages.Account
             [Required]
             [Display(Name = "Role")]
             public string Role { get; set; }
+
+            // Add field to store the user's first name
+            [Required]
+            [Display(Name = "Name")]
+            public string Name { get; set; }
         }
 
 
@@ -119,6 +126,7 @@ namespace Movie_rental.Areas.Identity.Pages.Account
             ViewData["Roles"] = roles;
         }
 
+
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
@@ -126,6 +134,7 @@ namespace Movie_rental.Areas.Identity.Pages.Account
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
+                user.Name = Input.Name;
 
                 await _userStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
                 await _emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
@@ -134,7 +143,6 @@ namespace Movie_rental.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
-
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
                     code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -143,6 +151,28 @@ namespace Movie_rental.Areas.Identity.Pages.Account
                         pageHandler: null,
                         values: new { area = "Identity", userId = userId, code = code, returnUrl = returnUrl },
                         protocol: Request.Scheme);
+                    
+                    // Add customer to the customer table
+                    var Role = _dbContext.Roles.Where(r => r.Id == Input.Role).FirstOrDefault().ToString();
+                    if(Role == "Customer")
+                    {
+                        var customer = new Customer()
+                        {
+                            Id = user.Id,
+                        };
+                        _dbContext.Database.ExecuteSql($"INSERT INTO [MovieRental].[dbo].[Customer] (Id) VALUES ({user.Id})");
+                        _dbContext.SaveChanges();
+                    }
+                    else if(Role == "Manager")
+                    {
+                        var manager = new Manager()
+                        {
+                            Id = user.Id,
+                        };
+                        _dbContext.Database.ExecuteSql($"INSERT INTO [MovieRental].[dbo].[Manager] (Id) VALUES ({user.Id})");
+                        _dbContext.SaveChanges();
+                    }
+
                     // Add the role to the userRoles table
                     var role = _dbContext.Roles.Where(r => r.Id == Input.Role).FirstOrDefault();
                     var userRole = new IdentityUserRole<string>();
