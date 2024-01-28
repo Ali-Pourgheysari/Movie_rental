@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Movie_rental.Data;
 using Movie_rental.Entities;
@@ -7,11 +8,13 @@ using Movie_rental.Services;
 
 namespace Movie_rental.Controllers
 {
+    [Authorize(Roles = "Manager, Customer")]
     public class SharedController : Controller
     {
         private readonly ExecuteQuery executeQuery;
         private readonly UserManager<User> userManager;
         private readonly int _delayLimit;
+        private readonly int _customerDelayCount;
 
         public SharedController(
             ExecuteQuery executeQuery,
@@ -20,6 +23,7 @@ namespace Movie_rental.Controllers
             this.executeQuery = executeQuery;
             this.userManager = userManager;
             _delayLimit = 14;
+            _customerDelayCount = 10;
         }
 
         public async Task<IActionResult> StoresDetails()
@@ -161,6 +165,29 @@ namespace Movie_rental.Controllers
             query += $@" GROUP BY f.Id, f.Title";
 
             return View(executeQuery.GetExecuteQuery<RentalDetails>(query));
+        }
+
+        public async Task<IActionResult> PaymentDetails(int id)
+        {
+            var query = $@"SELECT p.Amount AS Amount, u.Name AS CustomerName, u.Id AS CustomerId, f.Id AS FilmId, f.Title AS FilmName, StoreId
+                            FROM Payments P
+                            JOIN Rentals R ON P.RentalId = R.Id
+                            JOIN Inventories I ON R.InventoryId = I.Id
+                            JOIN Films f ON f.Id = I.FilmId
+                            JOIN [User] u ON u.Id = p.CustomerId";
+
+            var user = (await userManager.GetUserAsync(User));
+            var role = (await userManager.GetRolesAsync(user))[0];
+            if (role == "Manager")
+            {
+                query += $@" WHERE StoreId = '{id}'";
+            }
+            else
+            {
+                query += $@" WHERE u.Id = '{user.Id}'";
+            }
+
+            return View(executeQuery.GetExecuteQuery<PaymentDetailsModel>(query));
         }
     }
 }

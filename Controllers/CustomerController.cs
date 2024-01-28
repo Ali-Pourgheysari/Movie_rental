@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Movie_rental.Entities;
 using Movie_rental.Models;
@@ -7,6 +8,7 @@ using System.Data;
 
 namespace Movie_rental.Controllers
 {
+    [Authorize(Roles = "Customer")]
     public class CustomerController : Controller
     {
         private ExecuteQuery executeQuery;
@@ -14,6 +16,7 @@ namespace Movie_rental.Controllers
         private int _delayLimit;
         private int _costPerDay;
         private int _penalty;
+        private int _customerDelayCount;
 
         public CustomerController(
         ExecuteQuery executeQuery,
@@ -24,6 +27,7 @@ namespace Movie_rental.Controllers
             _delayLimit = 14;
             _costPerDay = 2;
             _penalty = 3;
+            _customerDelayCount = 10;
         }
         [HttpGet]
         public async Task<IActionResult> RentalHistory()
@@ -70,20 +74,30 @@ namespace Movie_rental.Controllers
             executeQuery.PostExecuteQuery(returnDateQuery);
 
             // Update Payments
-            var paymentQuery = $@"INSERT INTO Payments(CustomerId, RentalId, Amount)
-                            SELECT '{customerId}', '{rentalId}', (
-                                SELECT
+            var paymentQuery = $@"
+                                DECLARE @RentalCost INT;
+
+                                SELECT @RentalCost = 
                                     CASE
-                                        WHEN DATEDIFF(DAY, RentalDate, ReturnDate) < '{_delayLimit}' THEN
-                                            (DATEDIFF(DAY, RentalDate, ReturnDate) * '{_costPerDay}')
+                                        WHEN DATEDIFF(DAY, RentalDate, ReturnDate) < {_delayLimit} THEN
+                                            (DATEDIFF(DAY, RentalDate, ReturnDate) * {_costPerDay})
                                         ELSE
-                                            ((DATEDIFF(DAY, RentalDate, ReturnDate) * '{_costPerDay}')
-                                            + (DATEDIFF(DAY, RentalDate, ReturnDate) - '{_delayLimit}') * '{_penalty}')
-                                    END AS RentalCost
-                                FROM
-                                    Rentals
-                                WHERE Id = '{rentalId}'
-                            )";
+                                            ((DATEDIFF(DAY, RentalDate, ReturnDate) * {_costPerDay})
+                                            + (DATEDIFF(DAY, RentalDate, ReturnDate) - {_delayLimit}) * {_penalty})
+                                    END
+
+                                FROM Rentals
+                                WHERE Id = {rentalId};
+
+                                INSERT INTO Payments (CustomerId, RentalId, Amount)
+                                VALUES ('{customerId}', '{rentalId}', @RentalCost);
+
+                                IF @RentalCost > {_delayLimit * _costPerDay}
+                                BEGIN
+                                    UPDATE Customers
+                                    SET DelayCount = DelayCount + 1
+                                    WHERE Id = '{customerId}'
+                                END";
 
             executeQuery.PostExecuteQuery(paymentQuery);
             return RedirectToAction("RentalHistory");
@@ -93,6 +107,20 @@ namespace Movie_rental.Controllers
         [HttpGet]
         public async Task<IActionResult> Reservation(int id)
         {
+
+            var customerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+
+            var delayCountQuery = $@"SELECT DelayCount
+                                FROM Customer
+                                WHERE Id = '{customerId}'";
+
+            var customer = executeQuery.GetExecuteQuery<Customer>(delayCountQuery).FirstOrDefault();
+            if (customer.DelayCount > _customerDelayCount)
+            {
+                ViewData["ShowAlert"] = true;
+                ViewData["AlertMessage"] = $"You have more than {_customerDelayCount} delays. You can't make a reservation.";
+            }
+
             //Available copies = Total copies - Rented copies - Reserved copies
             var query = $@"SELECT F.Id AS FilmId, F.Title AS FilmTitle, I.Id AS InventoryId,
                           (

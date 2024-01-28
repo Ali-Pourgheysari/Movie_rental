@@ -1,0 +1,51 @@
+﻿@model List<PaymentDetailsModel>
+
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            @if(User.IsInRole("Manager"))
+            {
+                <th scope="col">Customer Name</th>
+            }
+            <th scope="col">Film title</th>
+            <th scope="col">Payment amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            <tr>
+                <th scope="row">@(i + 1)</th>
+                @if(User.IsInRole("Manager"))
+                {
+                    <td>
+                        <a asp-controller="Manager" asp-action="ChosenCustomer" asp-route-id="@Model[i].CustomerId" asp-route-storeId="@Model[i].StoreId">@Model[i].CustomerName</a>
+                    </td>
+                    <td>
+                        <a asp-controller="Manager" asp-action="ChosenFilm" asp-route-id="@Model[i].FilmId" asp-route-storeId="@Model[i].StoreId">@Model[i].FilmName</a>
+                    </td>
+                }
+                else
+                {
+                    <td>@(Model[i].FilmName)$</td>
+                }
+                <td>@(Model[i].Amount)$</td>
+            </tr>
+        }
+        <tr class="bg-dark text-white">
+            <th scope="row">
+                Total price:
+            </th>
+            @if(User.IsInRole("Manager"))
+            {
+                <td></td>
+            }
+            <td></td>
+            <td class="fw-bold">
+                @Model.Sum(x => x.Amount)$
+            </td>   
+        </tr>
+    </tbody>
+</table>

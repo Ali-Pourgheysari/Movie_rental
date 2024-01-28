@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Movie_rental.Controllers
 {
+    [Authorize(Roles = "Manager")]
     public class ManagerController : Controller
     {
         private readonly ExecuteQuery executeQuery;
@@ -107,19 +108,6 @@ namespace Movie_rental.Controllers
             var query = $@"UPDATE Stores SET Address = '{address}' WHERE Id = {id}";
             executeQuery.PostExecuteQuery(query);
             return RedirectToAction("StoresDetails");
-        }
-
-        public async Task<IActionResult> PaymentDetails(int id)
-        {
-            var query = $@"SELECT p.Amount AS Amount, u.Name AS CustomerName, u.Id AS CustomerId, f.Id AS FilmId, f.Title AS FilmName, StoreId
-                            FROM Payments P
-                            JOIN Rentals R ON P.RentalId = R.Id
-                            JOIN Inventories I ON R.InventoryId = I.Id
-                            JOIN Films f ON f.Id = I.FilmId
-                            JOIN [User] u ON u.Id = p.CustomerId
-                            WHERE StoreId = {id}";
-
-            return View(executeQuery.GetExecuteQuery<PaymentDetailsModel>(query));
         }
 
         public async Task<IActionResult> ChosenCustomer(string id, string storeId)

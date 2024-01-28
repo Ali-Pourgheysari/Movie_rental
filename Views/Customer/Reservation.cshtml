@@ -1,7 +1,16 @@
 ﻿@model List<ReservationModel>
-
+@{
+    if (User.IsInRole("Customer") && ViewData["ShowAlert"] != null)
+    {
+        string alert = ViewData["AlertMessage"].ToString();
+        // show alert
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>@alert</strong>
+        </div>
+    }
+}
 <h1>Available Films to rent at the moment</h1>
-<table class="table table-striped">
+<table class="table table-striped" id="film-table">
     <thead>
         <tr>
             <th scope="col">#</th>
@@ -28,7 +37,7 @@
                         <form method="post">
                             <input type="hidden" name="filmId" value="@Model[i].FilmId" />
                             <input type="hidden" name="inventoryId" value="@Model[i].InventoryId" />
-                            <button type="submit" class="btn btn-sm btn-primary">Select</button>
+                            <button type="submit" class="btn btn-sm btn-primary disabled-button">Select</button>
                         </form>
                     </td>
                 }
@@ -43,7 +52,7 @@
                         <form method="post">
                             <input type="hidden" name="filmId" value="@Model[i].FilmId" />
                             <input type="hidden" name="inventoryId" value="@Model[i].InventoryId" />
-                            <button disabled type="button" class="btn btn-sm btn-primary">Select</button>
+                            <button disabled type="button" class="btn btn-sm btn-primary disabled-button">Select</button>
                         </form>
                     </td>
                 }
@@ -51,3 +60,18 @@
         }
     </tbody>
 </table>
+
+@section Scripts {
+    <script>
+        // Add this script to handle button disable/enable based on alarm status
+        var showAlert = @((User.IsInRole("Customer") && ViewData["ShowAlert"] != null) ? "true" : "false");
+
+        if (showAlert) {
+            // Disable the button and change cursor style
+            document.querySelectorAll('.disabled-button').forEach(function (button) {
+                button.setAttribute('disabled', 'true');
+                button.style.cursor = 'not-allowed';
+            });
+        }
+    </script>
+}
