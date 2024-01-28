@@ -102,10 +102,10 @@ namespace Movie_rental.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> StoresDetails(string address, int id)
+        public async Task<IActionResult> StoresDetails(string name, string address, int id)
         {
             _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
-            var query = $@"UPDATE Stores SET Address = '{address}' WHERE Id = {id}";
+            var query = $@"UPDATE Stores SET Address = '{address}', Name = '{name}' WHERE Id = {id}";
             executeQuery.PostExecuteQuery(query);
             return RedirectToAction(controllerName: "Shared", actionName: "StoresDetails");
         }
@@ -155,6 +155,14 @@ namespace Movie_rental.Controllers
                         ORDER BY COUNT(*) DESC";
 
             return View(executeQuery.GetExecuteQuery<TopSellerModel>(query));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddStore(string managerId)
+        {
+            var query = $@"INSERT INTO Stores (Address, ManagerId) VALUES ('', '{managerId}')";
+            executeQuery.PostExecuteQuery(query);
+            return RedirectToAction("StoresDetails", "Shared");
         }
     }
 }

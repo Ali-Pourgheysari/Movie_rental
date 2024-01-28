@@ -34,6 +34,7 @@ namespace Movie_rental.Controllers
             if (role[0] == "Manager")
             {
                 query = $@"SELECT * FROM Stores WHERE ManagerId = '{user.Id}'";
+                ViewBag.ManagerId = user.Id;
             }
             return View(executeQuery.GetExecuteQuery<Store>(query));
         }
