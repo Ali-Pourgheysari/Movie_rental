@@ -11,6 +11,10 @@
                 <th scope="col">Submit</th>
                 <th scope="col">Check payments</th>
             }
+            else
+            {
+                <th scope="col">Go to the store</th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -38,6 +42,11 @@
                     else
                     {
                         <td>@Model[i].Address</td>
+                        <td>
+                            <button type="submit" class="btn btn-sm btn-primary">
+                                <a class="text-white text-decoration-none" asp-controller="Customer" asp-action="Reservation" asp-route-id="@Model[i].Id">Select</a>
+                            </button>
+                        </td>
                     }
                 </tr>
             </form>

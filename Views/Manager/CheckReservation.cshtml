@@ -6,6 +6,7 @@
             <th scope="col">#</th>
             <th scope="col">Customer name</th>
             <th scope="col">Film title</th>
+            <th scope="col">Accept reservation</th>
         </tr>
     </thead>
     <tbody>
@@ -20,7 +21,7 @@
                         <input type="hidden" name="CustomerId" value="@Model[i].CustomerId" />
                         <input type="hidden" name="ReservationId" value="@Model[i].ReservationId" />
                         <input type="hidden" name="InventoryId" value="@Model[i].InventoryId" />
-                        <button type="submit" class="btn btn-primary">Accept reservation</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
                 </td>
             </tr>

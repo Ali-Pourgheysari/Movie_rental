@@ -80,13 +80,13 @@ namespace Movie_rental.Controllers
                         JOIN
                             Stores s ON i.StoreId = s.Id
                         JOIN
-	                        Films f ON f.Id = r.Id
+	                        Films f ON f.Id = i.FilmId
                         JOIN
 	                        [User] u ON u.Id = r.CustomerId
                         WHERE
                             s.ManagerId = '{_managerId}'";
-
-            return View(executeQuery.GetExecuteQuery<CheckReservation>(query));
+            var data = executeQuery.GetExecuteQuery<CheckReservation>(query);
+            return View(data);
         }
 
         [HttpPost]

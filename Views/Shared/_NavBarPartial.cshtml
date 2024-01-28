@@ -22,7 +22,9 @@
                 }
                 @if(User.IsInRole("Customer"))
                 {
-
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Customer" asp-action="RentalHistory">My rental History</a>
+                    </li>
                 }
                 @*show below items to the user who authenticates*@
                 @if (User.Identity.IsAuthenticated)

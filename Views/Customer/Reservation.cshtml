@@ -1,0 +1,49 @@
+﻿@model List<ReservationModel>
+
+<h1>Available Films to rent at the moment</h1>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Film title</th>
+            <th scope="col">Availability</th>
+            <th scope="col">Reserve</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            <tr>
+                <form method="post">
+                    <input type="hidden" name="filmId" value="@Model[i].FilmId" />
+                    <input type="hidden" name="inventoryId" value="@Model[i].InventoryId" />
+                    <th scope="row">@(i + 1)</th>
+                    <td>@Model[i].FilmTitle</td>
+
+                    @if (Model[i].AvailableCopies > 0)
+                    {
+                    <td>
+                        <strong>
+                            <span class="text-success">Available</span>
+                        </strong>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-primary">Select</button>
+                    </td>
+                    }
+                    else
+                    {
+                    <td>
+                        <strong>
+                            <span class="text-danger">Unavailable</span>
+                        </strong>
+                    </td>
+                    <td>
+                        <button disabled type="button" class="btn btn-sm btn-primary">Select</button>
+                    </td>
+                    }
+                </form>
+            </tr>
+        }
+    </tbody>
+</table>
