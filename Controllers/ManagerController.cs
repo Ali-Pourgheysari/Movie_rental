@@ -159,7 +159,7 @@ namespace Movie_rental.Controllers
                                 GROUP BY C.name
                                 ORDER BY COUNT(*) DESC";
 
-            var category = executeQuery.GetExecuteQuery<TopSellerModel>(categoryQquery).FirstOrDefault().TopCategory;
+            var category = executeQuery?.GetExecuteQuery<TopSellerModel>(categoryQquery)?.FirstOrDefault()?.TopCategory ?? "";
             var actorQuery = $@"SELECT top(1)
                                     A.LastName, 
                                     FirstName
@@ -173,7 +173,7 @@ namespace Movie_rental.Controllers
                                 GROUP BY A.LastName, A.FirstName
                                 ORDER BY COUNT(*) DESC";
 
-            var actor = executeQuery.GetExecuteQuery<TopSellerModel>(actorQuery).FirstOrDefault();
+            var actor = executeQuery?.GetExecuteQuery<TopSellerModel>(actorQuery)?.FirstOrDefault();
             var filmQuery = $@"SELECT top(1)
                                     F.Title AS TopFilm
                                 FROM Rentals R
@@ -184,12 +184,12 @@ namespace Movie_rental.Controllers
                                 GROUP BY F.Title
                                 ORDER BY COUNT(*) DESC";
 
-            var film = executeQuery.GetExecuteQuery<TopSellerModel>(filmQuery).FirstOrDefault().TopFilm;
+            var film = executeQuery?.GetExecuteQuery<TopSellerModel>(filmQuery)?.FirstOrDefault()?.TopFilm ?? "";
             var model = new TopSellerModel
             {
                 TopCategory = category,
-                FirstName = actor.FirstName,
-                LastName = actor.LastName,
+                FirstName = actor?.FirstName ?? "",
+                LastName = actor?.LastName ?? "",
                 TopFilm = film
             };
             var modelList = new List<TopSellerModel> { model };
@@ -202,6 +202,21 @@ namespace Movie_rental.Controllers
             var query = $@"INSERT INTO Stores (Address, ManagerId) VALUES ('', '{managerId}')";
             executeQuery.PostExecuteQuery(query);
             return RedirectToAction("StoresDetails", "Shared");
+        }
+
+        public IActionResult AddFilm(int id)
+        {
+            ViewBag.StoreId = id;
+            var query = $@"SELECT Id, Title, ReleaseYear, Description FROM Films";
+            return View(executeQuery.GetExecuteQuery<Film>(query));
+        }
+
+        [HttpPost]
+        public IActionResult AddFilm(int filmId, int storeId)
+        {
+            var query = $@"INSERT INTO Inventories (FilmId, StoreId) VALUES ({filmId}, {storeId})";
+            executeQuery.PostExecuteQuery(query);
+            return RedirectToAction("AddFilm", new { id = storeId });
         }
     }
 }

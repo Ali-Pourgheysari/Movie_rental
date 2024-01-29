@@ -1,6 +1,6 @@
 ﻿@model List<PaymentDetailsModel>
 
-
+<div class="wrap">
 <table class="table table-striped">
     <thead>
         <tr>
@@ -29,7 +29,7 @@
                 }
                 else
                 {
-                    <td>@(Model[i].FilmName)$</td>
+                    <td>@Model[i].FilmName</td>
                 }
                 <td>@(Model[i].Amount)$</td>
             </tr>
@@ -49,3 +49,4 @@
         </tr>
     </tbody>
 </table>
+</div>

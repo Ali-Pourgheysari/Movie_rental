@@ -14,5 +14,7 @@
         public DateTime? ReturnDate { get; set; }
         public DateTime RentalDate { get; set; }
         public int DaysLeftToReturn { get; set; }
+        public int CategoryId { get; set; }
+        public string CategoryName { get; set; }
     }
 }

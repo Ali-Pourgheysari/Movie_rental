@@ -41,57 +41,52 @@ namespace Movie_rental.Controllers
 
         public IActionResult Films()
         {
-            var query = $@"SELECT
-                            f.Id AS FilmId,
-                            f.Title AS FilmTitle,
-	                        c.Id AS CategoryId,
-	                        c.Name AS CategoryName,
-                            AVG(r.Score) AS AvgScore
-                        FROM
-                            Inventories i
-                        JOIN
-                            Films f ON i.FilmId = f.Id
-                        JOIN
-	                        FilmCategories fc ON fc.FilmId = f.Id
-                        JOIN
-	                        Categories c ON c.Id = fc.CategoryId
-                        LEFT JOIN
-                            Rentals r ON i.Id = r.InventoryId
-                        GROUP BY
-                            f.Id, f.Title, c.Name, c.Id
-                        ORDER BY AvgScore desc;";
+            var user = userManager.GetUserAsync(User).Result;
+            var userId = user.Id;
+            var role = userManager.GetRolesAsync(user).Result[0];
 
-            return View(executeQuery.GetExecuteQuery<FilmScoreCategory>(query));
+            var query = GenerateBaseFilmQuery();
+
+            if (role == "Manager")
+            {
+                query += $" WHERE s.ManagerId = '{userId}'";
+            }
+
+            query += " GROUP BY f.Id, f.Title, c.Name, c.Id, c.Name ORDER BY AvgScore DESC;";
+
+            return View(executeQuery.GetExecuteQuery<RentalDetails>(query));
         }
 
         public IActionResult ChosenCategory(int id)
         {
-            string query = $@"SELECT
-                            f.Id AS FilmId,
-                            f.Title AS FilmTitle,
-                            c.Id AS CategoryId,
-                            c.Name AS CategoryName,
-                            AVG(r.Score) AS AvgScore
-                        FROM
-                            Inventories i
-                        JOIN
-                            Films f ON i.FilmId = f.Id
-                        JOIN
-                            FilmCategories fc ON fc.FilmId = f.Id
-                        JOIN
-                            Categories c ON c.Id = fc.CategoryId
-                        JOIN
-                            Rentals r ON i.Id = r.InventoryId
-                        JOIN
-                            Stores s ON i.StoreId = s.Id
-                        WHERE
-                            c.Id = {id}
-                        GROUP BY
-                            f.Id, f.Title, c.Name, c.Id
-                        ORDER BY AvgScore desc;";
+            string query = GenerateBaseFilmQuery() + $" WHERE c.Id = {id} GROUP BY f.Id, f.Title, c.Name, c.Id ORDER BY AvgScore DESC;";
 
-            return View("Films", executeQuery.GetExecuteQuery<FilmScoreCategory>(query));
+            return View("Films", executeQuery.GetExecuteQuery<RentalDetails>(query));
+        }
 
+        private string GenerateBaseFilmQuery()
+        {
+            return $@"SELECT
+                f.Id AS FilmId,
+                f.Title,
+                c.Id AS CategoryId,
+                c.Name AS CategoryName,
+                AVG(r.Score) AS AvgScore,
+                COUNT(r.Id) AS NumberOfRentals,
+                COUNT(i.Id) AS FilmCopies,
+                COUNT(CASE WHEN DATEDIFF(day, r.RentalDate, r.ReturnDate) > {_delayLimit} THEN 1 END) AS NumberOfDelays
+            FROM
+                Inventories i
+            JOIN
+                Films f ON i.FilmId = f.Id
+            JOIN
+                Stores s ON i.StoreId = s.Id
+            LEFT JOIN
+                FilmCategories fc ON fc.FilmId = f.Id
+            LEFT JOIN
+                Categories c ON c.Id = fc.CategoryId
+            LEFT JOIN
+                Rentals r ON i.Id = r.InventoryId";
         }
 
         public IActionResult Search()
@@ -135,37 +130,6 @@ namespace Movie_rental.Controllers
             };
 
             return View(searchModel);
-        }
-
-        public async Task<IActionResult> RentalDetails()
-        {
-            var user = (await userManager.GetUserAsync(User));
-            var userId = user.Id;
-            var role = (await userManager.GetRolesAsync(user))[0];
-
-            var query = $@"SELECT
-                            f.Id AS FilmId,
-                            f.Title,
-                            COUNT(r.Id) AS NumberOfRentals,
-                            COUNT(i.Id) AS FilmCopies,
-                            AVG(r.Score) AS AvgScore,
-                            COUNT(CASE WHEN DATEDIFF(day, r.RentalDate, r.ReturnDate) > {_delayLimit} THEN 1 END) AS NumberOfDelays
-                        FROM
-                            Inventories i
-                        JOIN
-                            Films f ON i.FilmId = f.Id
-                        JOIN
-                            Stores s ON i.StoreId = s.Id
-                        LEFT JOIN
-                            Rentals r ON i.Id = r.InventoryId";
-
-            if (role == "Manager")
-            {
-                query += $@" WHERE s.ManagerId = '{userId}'";
-            }
-            query += $@" GROUP BY f.Id, f.Title";
-
-            return View(executeQuery.GetExecuteQuery<RentalDetails>(query));
         }
 
         public async Task<IActionResult> PaymentDetails(int id)

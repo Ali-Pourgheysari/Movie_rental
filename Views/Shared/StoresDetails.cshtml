@@ -2,6 +2,7 @@
 @{
     var _storeLimit = 2;
 }
+<div class="wrap">
 <table class="table table-striped">
     <thead>
         <tr>
@@ -12,6 +13,7 @@
             {
                 <th scope="col">Submit</th>
                 <th scope="col">Check payments</th>
+                <th scope="col">Add films to the store</th>
             }
             else
             {
@@ -36,12 +38,17 @@
                     </td>
                     <td>
                         <input type="hidden" name="id" value="@Model[i].Id" />
-                        <button type="submit" class="btn btn-sm btn-primary">&#10004</button>
+                        <button type="submit" class="btn btn-sm btn-primary text-white">&#10004</button>
                     </td>
                     </form>
                     <td>
-                        <button type="submit" class="btn btn-sm btn-primary">
+                        <button type="submit" class="btn btn-sm btn-primary text-white">
                             <a class="text-white text-decoration-none" asp-controller="Shared" asp-action="PaymentDetails" asp-route-id="@Model[i].Id">Select</a>
+                        </button>
+                    </td>
+                    <td>
+                        <button type="submit" class="btn btn-sm btn-success text-white">
+                            <a class="text-white text-decoration-none" asp-controller="Manager" asp-action="AddFilm" asp-route-id="@Model[i].Id">Select</a>
                         </button>
                     </td>
 
@@ -79,7 +86,9 @@
                 <td></td>
                 <td></td>
                 <td></td>
+                <td></td>
             </tr>
         }
     </tbody>
 </table>
+</div>

@@ -96,7 +96,7 @@ namespace Movie_rental.Controllers
 
                                 IF @RentalCost > {_delayLimit * _costPerDay}
                                 BEGIN
-                                    UPDATE Customers
+                                    UPDATE Customer
                                     SET DelayCount = DelayCount + 1
                                     WHERE Id = '{customerId}'
                                 END";
@@ -148,7 +148,7 @@ namespace Movie_rental.Controllers
             }
 
             //Available copies = Total copies - Rented copies - Reserved copies
-            var query = $@"SELECT F.Id AS FilmId, F.Title AS FilmTitle, I.Id AS InventoryId,
+            var query = $@"SELECT F.Id AS FilmId, F.Title AS FilmTitle, MAX(I.id) AS InventoryId,
                           (
                             SELECT COUNT(*)                            
                             FROM Inventories I2
@@ -157,20 +157,28 @@ namespace Movie_rental.Controllers
                           ) - (
                             SELECT COUNT(*)
                             FROM Rentals R
-                            WHERE R.InventoryId = I.Id
+							JOIN Inventories INV ON R.InventoryId = INV.Id
+                            WHERE INV.StoreId = S.Id AND INV.FilmId = F.Id
                               AND (R.ReturnDate IS NULL OR R.ReturnDate > GETDATE())
                           ) - (
                             SELECT COUNT(*)
                             FROM Reservations RES
-                            WHERE RES.InventoryId = I.Id
+                            JOIN Inventories INV ON RES.InventoryId = INV.Id
+                            WHERE INV.StoreId = S.Id AND INV.FilmId = F.Id
                           ) AS AvailableCopies
                         FROM Films F
                         JOIN Inventories I ON F.Id = I.FilmId
                         JOIN Stores S ON I.StoreId = S.Id
-                        WHERE S.id = '{id}'";
+						LEFT JOIN Rentals R ON R.InventoryId = I.Id
+                        WHERE S.id = '{id}' 
+						AND I.Id NOT IN ( SELECT I.Id FROM Inventories I
+							JOIN Stores S ON I.StoreId = S.Id
+							JOIN Rentals R ON R.InventoryId = I.Id
+							WHERE S.id = '{id}' AND (R.ReturnDate IS NULL OR R.ReturnDate > GETDATE())
+						)
+						GROUP BY F.Id, F.Title, S.Id";
 
-            var data = executeQuery.GetExecuteQuery<ReservationModel>(query);
-            return View(data);
+            return View(executeQuery.GetExecuteQuery<ReservationModel>(query));
         }
 
         [HttpPost]

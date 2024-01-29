@@ -1,5 +1,6 @@
 html {
   font-size: 14px;
+  max-width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -10,16 +11,54 @@ html {
 
 html {
   position: relative;
-  min-height: 100%;
+  height: 100vh;
 }
 
 body {
     margin-bottom: 60px;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    background-image: url(../static/wallpaper.jpg);
+}
+
+.wrap {
+    overflow-y: auto;
+    height: 93vh;
+    min-width: 100%;
+    display: block;
+    width: auto;
+    font-weight: 500;
+}
+
+.navbar .navbar-nav {
+    padding: 1% 0%;
+    margin: auto;
+    font-weight: 500;
+    font-size: 20px;
+    -webkit-text-stroke: 0.8px white;
+    color: white;
+}
+table * {
+    color: white;
+    font-size: 14px;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    align-items: start;
+    height: 86%;
 }
 
 .container {
-    position: absolute;
-    width: 100%;
+    min-width: 100%;
+    height: 100%;
 }
 
 .wrapper {
@@ -35,50 +74,6 @@ body {
     flex-grow: 2;
 }
 
-/*.upper-div {
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    height: 100%;
-    margin: 0;
+.auth-fom {
+    margin: 10% 0% 0% 40%;
 }
-
-.lower-div{
-    flex: 1;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    height: 100%;
-    margin: 0;
-}*/
-/*.quadrant {
-    flex: 2;
-    overflow: auto;
-    padding: 10px;
-}
-*/
-/*#top-left {
-    order: 1;
-    align-self: flex-start;
-    flex-grow: 2;
-}
-
-#top-right {
-    order: 2;
-    align-self: flex-start;
-    flex-grow: 2;
-}
-
-#bottom-left {
-    order: 3;
-    align-self: flex-end;
-    flex-grow: 2;
-}
-
-#bottom-right {
-    order: 4;
-    align-self: flex-end;
-    flex-grow: 2;
-}*/

@@ -1,6 +1,6 @@
-﻿@model List<FilmScoreCategory>
+﻿@model List<RentalDetails>
 
-
+<div class="wrap">
 <table class="table table-striped">
     <thead>
         <tr>
@@ -8,6 +8,12 @@
             <th scope="col">Film title</th>
             <th scope="col">Category</th>
             <th scope="col">Average score</th>
+            <th scope="col">Number of rentals of the film</th>
+            @if (User.IsInRole("Manager"))
+            {
+                <th scope="col">Number of copies in the store</th>
+                <th scope="col">Number of delays per film</th>
+            }
         </tr>
     </thead>
     <tbody>
@@ -15,12 +21,26 @@
         {
             <tr>
                 <th scope="row">@(i + 1)</th>
-                <td>@Model[i].FilmTitle</td>
+                <td>@Model[i].Title</td>
                 <td>
                     <a asp-controller="Shared" asp-action="ChosenCategory" asp-route-id="@Model[i].CategoryId">@Model[i].CategoryName</a>
                 </td>
-                <td>@Model[i].AvgScore.ToString("0.##")</td>
+                @if(Model[i].AvgScore == 0)
+                {
+                    <td>Not rated yet</td>
+                }
+                else
+                {
+                    <td>@Model[i].AvgScore.ToString("0.##")</td>
+                }
+                <td>@Model[i].NumberOfRentals</td>
+                @if (User.IsInRole("Manager"))
+                {
+                    <td>@Model[i].FilmCopies</td>
+                    <td>@Model[i].NumberOfDelays</td>
+                }
             </tr>
         }
     </tbody>
 </table>
+</div>
