@@ -20,7 +20,13 @@
             <tr>
                 <th scope="row">@(i + 1)</th>
                 <td>@Model[i].Title</td>
-                <td>@Model[i].AvgScore.ToString("0.##")</td>
+                        @if(Model[i].AvgScore == 0)
+                        {
+                            <td>No score</td>
+                        }
+                        else{
+                            <td>@Model[i].AvgScore.ToString("0.##")</td>
+                        }
                 <td>@Model[i].NumberOfRentals</td>
                 @if(User.IsInRole("Manager"))
                 {

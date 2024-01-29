@@ -138,7 +138,7 @@ namespace Movie_rental.Controllers
             if(NumberOfActiveMovies.TotalMovies >= _limitOfActiveMocties)
             {
                 ViewData["ShowAlert"] = true;
-                ViewData["AlertMessage"] = $"You have more than {_limitOfActiveMocties} active or reserved movies. You can't make a reservation.";
+                ViewData["AlertMessage"] = $"You have {_limitOfActiveMocties} or more active and reserved movies. You can't make a reservation.";
             }
             var customer = executeQuery.GetExecuteQuery<Customer>(delayCountQuery).FirstOrDefault();
             if (customer.DelayCount > _customerDelayCount)

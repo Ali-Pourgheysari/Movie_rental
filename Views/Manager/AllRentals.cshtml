@@ -1,4 +1,4 @@
-﻿@model List<Rental>
+﻿@model List<AllRentalsModel>
 
 <table class="table table-striped">
     <thead>
@@ -6,7 +6,7 @@
             <th scope="col">#</th>
             <th scope="col">Rental date</th>
             <th scope="col">Return date</th>
-            <th scope="col">Customer Id</th>
+            <th scope="col">Customer Name</th>
             <th scope="col">Inventory Id</th>
             <th scope="col">Activation status</th>
             <th scope="col">Submit</th>
@@ -35,7 +35,7 @@
                         </span>
                     </div>
                 </td>
-                <td>@Model[i].CustomerId</td>
+                <td>@Model[i].CustomerName</td>
                 <td>@Model[i].InventoryId</td>
                 <td>
                     <strong>

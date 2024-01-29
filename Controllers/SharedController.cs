@@ -39,7 +39,7 @@ namespace Movie_rental.Controllers
             return View(executeQuery.GetExecuteQuery<Store>(query));
         }
 
-        public async Task<IActionResult> Films()
+        public IActionResult Films()
         {
             var query = $@"SELECT
                             f.Id AS FilmId,
@@ -55,7 +55,7 @@ namespace Movie_rental.Controllers
 	                        FilmCategories fc ON fc.FilmId = f.Id
                         JOIN
 	                        Categories c ON c.Id = fc.CategoryId
-                        JOIN
+                        LEFT JOIN
                             Rentals r ON i.Id = r.InventoryId
                         GROUP BY
                             f.Id, f.Title, c.Name, c.Id
@@ -64,7 +64,7 @@ namespace Movie_rental.Controllers
             return View(executeQuery.GetExecuteQuery<FilmScoreCategory>(query));
         }
 
-        public async Task<IActionResult> ChosenCategory(int id)
+        public IActionResult ChosenCategory(int id)
         {
             string query = $@"SELECT
                             f.Id AS FilmId,
@@ -94,14 +94,14 @@ namespace Movie_rental.Controllers
 
         }
 
-        public async Task<IActionResult> Search()
+        public IActionResult Search()
         {
             SearchModel data = new SearchModel();
             return View(data);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Search(string search)
+        public IActionResult Search(string search)
         {
             string actorName = $@"SELECT FirstName, LastName
                                 FROM Actors

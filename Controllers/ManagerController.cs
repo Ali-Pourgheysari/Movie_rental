@@ -17,7 +17,6 @@ namespace Movie_rental.Controllers
         private readonly ExecuteQuery executeQuery;
         private readonly UserManager<User> userManager;
         private readonly int _delayLimit;
-        private string _managerId;
 
         public ManagerController(
             ExecuteQuery executeQuery,
@@ -30,40 +29,47 @@ namespace Movie_rental.Controllers
 
         public async Task<IActionResult> AllCustomers()
         {
-            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"SELECT DISTINCT [User].Name, [User].UserName, [User].Email, DelayCount 
                            FROM [User] 
                            JOIN Customer ON [User].Id = Customer.Id
                            JOIN Rentals ON Customer.Id = Rentals.CustomerId 
                            JOIN Inventories ON Rentals.InventoryId = Inventories.Id 
                            JOIN Stores ON Inventories.StoreId = Stores.Id 
-                           WHERE Stores.ManagerId = '{_managerId}'";
+                           WHERE Stores.ManagerId = '{managerId}'";
             
             return View(executeQuery.GetExecuteQuery<CustomerInfo>(query));
         }
 
         public async Task<IActionResult> AllRentals()
         {
-            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             // Active condition is checked in the view
             var query = $@"SELECT
-                            r.* 
+                            r.RentalDate,
+                            r.ReturnDate,
+                            r.Id,
+                            r.Score,
+                            r.InventoryId,
+                            c.Name AS CustomerName
                         FROM
                             Rentals r
                         JOIN
                             Inventories i ON r.InventoryId = i.Id
                         JOIN
                             Stores s ON i.StoreId = s.Id
+                        JOIN
+                            [User] c ON r.CustomerId = c.Id
                         WHERE
-                            s.ManagerId = '{_managerId}'";
+                            s.ManagerId = '{managerId}'";
 
-            return View(executeQuery.GetExecuteQuery<Rental>(query));
+            return View(executeQuery.GetExecuteQuery<AllRentalsModel>(query));
         }
 
         [HttpPost]
         public async Task<IActionResult> AllRentals(DateTime RentalDate, DateTime ReturnDate, int Id)
         {
-            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"UPDATE Rentals SET RentalDate = '{RentalDate}', ReturnDate = '{ReturnDate}' WHERE Id = {Id}";
             executeQuery.PostExecuteQuery(query);
             return RedirectToAction("AllRentals");
@@ -71,7 +77,7 @@ namespace Movie_rental.Controllers
 
         public async Task<IActionResult> CheckReservation()
         {
-            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"SELECT
                             u.Id AS CustomerId, u.Name AS CustomerName, f.Title, r.Id AS ReservationId, i.Id AS InventoryId
                         FROM
@@ -85,32 +91,34 @@ namespace Movie_rental.Controllers
                         JOIN
 	                        [User] u ON u.Id = r.CustomerId
                         WHERE
-                            s.ManagerId = '{_managerId}'";
+                            s.ManagerId = '{managerId}'";
             var data = executeQuery.GetExecuteQuery<CheckReservation>(query);
             return View(data);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CheckReservation(int reservationId, int inventoryId, string customerId)
+        public IActionResult CheckReservation(int reservationId, int inventoryId, string customerId)
         {
-            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var deleteFromReservationquery = $@"DELETE FROM Reservations WHERE Id = {reservationId}";
             var addToRentalQuery = $@"INSERT INTO Rentals (RentalDate, InventoryId, CustomerId) VALUES (GETDATE(), {inventoryId}, '{customerId}')";
+            if(inventoryId != 0)
+            {
+                executeQuery.PostExecuteQuery(addToRentalQuery);
+            }
             executeQuery.PostExecuteQuery(deleteFromReservationquery);
-            executeQuery.PostExecuteQuery(addToRentalQuery);
             return RedirectToAction("CheckReservation");
         }
 
         [HttpPost]
         public async Task<IActionResult> StoresDetails(string name, string address, int id)
         {
-            _managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
             var query = $@"UPDATE Stores SET Address = '{address}', Name = '{name}' WHERE Id = {id}";
             executeQuery.PostExecuteQuery(query);
             return RedirectToAction(controllerName: "Shared", actionName: "StoresDetails");
         }
 
-        public async Task<IActionResult> ChosenCustomer(string id, string storeId)
+        public IActionResult ChosenCustomer(string id, string storeId)
         {
             var query = $@"SELECT p.Amount, u.Name AS CustomerName, u.Id AS CustomerId, f.Id AS FilmId, f.Title AS FilmName
                             FROM Payments P
@@ -123,7 +131,7 @@ namespace Movie_rental.Controllers
             return View("PaymentDetails", executeQuery.GetExecuteQuery<PaymentDetailsModel>(query));
         }
 
-        public async Task<IActionResult> ChosenFilm(int id, string storeId)
+        public IActionResult ChosenFilm(int id, string storeId)
         {
             var query = $@"SELECT p.Amount, u.Name AS CustomerName, u.Id AS CustomerId, f.Id AS FilmId, f.Title AS FilmName
                             FROM Payments P
@@ -138,27 +146,58 @@ namespace Movie_rental.Controllers
 
         public async Task<IActionResult> TopSeller()
         {
-            var query = $@"SELECT top(1)
-                            C.name AS TopCategory,
-                            F.Title AS TopFilm,
-                            A.FirstName AS FirstName,
-	                        A.LastName AS LastName
-                        FROM Rentals R
-                        JOIN Inventories I ON R.InventoryId = I.Id
-                        JOIN Films F ON I.FilmId = F.Id
-                        JOIN FilmCategories FC ON F.Id = FC.FilmId
-                        JOIN Categories C ON FC.CategoryId = C.Id
-                        JOIN FilmActors FA ON F.Id = FA.FilmId
-                        JOIN Actors A ON FA.ActorId = A.Id
-                        WHERE I.StoreId = '1'
-                        GROUP BY C.name, F.Title, A.FirstName, A.LastName
-                        ORDER BY COUNT(*) DESC";
+            var managerId = (await userManager.FindByEmailAsync(User.Identity.Name)).Id;
+            var categoryQquery = $@"SELECT top(1)
+                                    C.name AS TopCategory
+                                FROM Rentals R
+                                JOIN Inventories I ON R.InventoryId = I.Id
+                                JOIN Films F ON I.FilmId = F.Id
+                                JOIN FilmCategories FC ON F.Id = FC.FilmId
+                                JOIN Categories C ON FC.CategoryId = C.Id
+                                JOIN Stores S ON S.Id = I.StoreId
+                                WHERE S.ManagerId = '{managerId}'
+                                GROUP BY C.name
+                                ORDER BY COUNT(*) DESC";
 
-            return View(executeQuery.GetExecuteQuery<TopSellerModel>(query));
+            var category = executeQuery.GetExecuteQuery<TopSellerModel>(categoryQquery).FirstOrDefault().TopCategory;
+            var actorQuery = $@"SELECT top(1)
+                                    A.LastName, 
+                                    FirstName
+                                FROM Rentals R
+                                JOIN Inventories I ON R.InventoryId = I.Id
+                                JOIN Films F ON I.FilmId = F.Id
+                                JOIN FilmActors FA ON F.Id = FA.FilmId
+                                JOIN Actors A ON FA.ActorId = A.Id
+                                JOIN Stores S ON S.Id = I.StoreId
+                                WHERE S.ManagerId = '{managerId}'
+                                GROUP BY A.LastName, A.FirstName
+                                ORDER BY COUNT(*) DESC";
+
+            var actor = executeQuery.GetExecuteQuery<TopSellerModel>(actorQuery).FirstOrDefault();
+            var filmQuery = $@"SELECT top(1)
+                                    F.Title AS TopFilm
+                                FROM Rentals R
+                                JOIN Inventories I ON R.InventoryId = I.Id
+                                JOIN Films F ON I.FilmId = F.Id
+                                JOIN Stores S ON S.Id = I.StoreId
+                                WHERE S.ManagerId = '{managerId}'
+                                GROUP BY F.Title
+                                ORDER BY COUNT(*) DESC";
+
+            var film = executeQuery.GetExecuteQuery<TopSellerModel>(filmQuery).FirstOrDefault().TopFilm;
+            var model = new TopSellerModel
+            {
+                TopCategory = category,
+                FirstName = actor.FirstName,
+                LastName = actor.LastName,
+                TopFilm = film
+            };
+            var modelList = new List<TopSellerModel> { model };
+            return View(modelList);
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddStore(string managerId)
+        public IActionResult AddStore(string managerId)
         {
             var query = $@"INSERT INTO Stores (Address, ManagerId) VALUES ('', '{managerId}')";
             executeQuery.PostExecuteQuery(query);
