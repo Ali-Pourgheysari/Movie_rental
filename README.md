@@ -53,7 +53,7 @@ This project is a Movie Rental System, designed to manage movie inventories, ren
   - Bootstrap for Styling
 
 ## Project Structure
-
+- **/Entities:** Contains the database context and entity classes.
 - **/Models:** Contains the data models for the application.
 - **/Controllers:** Defines the backend logic for handling HTTP requests.
 - **/Views:** Contains Razor views for rendering HTML pages.
