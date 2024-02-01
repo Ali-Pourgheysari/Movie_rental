@@ -43,7 +43,7 @@ This project is a Movie Rental System, designed to manage movie inventories, ren
 ## Technologies Used
 
 - **Backend:**
-  - ASP.NET Core (C#)
+  - ASP.NET Core 7 (C#)
   - Entity Framework Core for Database Operations (I used raw SQL queries because this project is for a database course)
   - SQL Server for Database Storage
 
