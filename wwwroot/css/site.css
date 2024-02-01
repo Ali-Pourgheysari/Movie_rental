@@ -28,7 +28,7 @@ body {
 
 .wrap {
     overflow-y: auto;
-    height: 93vh;
+    height: 90vh;
     min-width: 100%;
     display: block;
     width: auto;
